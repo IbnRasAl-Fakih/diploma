@@ -46,8 +46,8 @@ public class DatabaseQueryExecuterService {
                     ObjectNode rowObject = objectMapper.createObjectNode();
                     for (int i = 1; i <= columnCount; i++) {
                         String columnName = resultSet.getMetaData().getColumnName(i);
-                        Object columnValue = resultSet.getObject(i);
-                        rowObject.putPOJO(columnName, columnValue);
+                        String columnValue = resultSet.getString(i);
+                        rowObject.put(columnName, columnValue);
                     }
                     jsonArray.add(rowObject);
                 }

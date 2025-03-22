@@ -6,9 +6,6 @@ import com.diploma.service.DatabaseConnectorService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.*;
 
 @RestController
