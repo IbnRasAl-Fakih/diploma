@@ -9,5 +9,6 @@
     <include file="001-create-users-table.xml" relativeToChangelogFile="true"/>
     <include file="002-create-pending-registrations.xml" relativeToChangelogFile="true"/>
     <include file="003-create-workflows-table.xml" relativeToChangelogFile="true"/>
+    <include file="004-create-results-table.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
