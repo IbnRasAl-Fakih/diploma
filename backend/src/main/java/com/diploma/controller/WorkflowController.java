@@ -3,6 +3,9 @@ package com.diploma.controller;
 import com.diploma.dto.WorkflowRequestDto;
 import com.diploma.dto.WorkflowResponseDto;
 import com.diploma.service.WorkflowService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +22,7 @@ public class WorkflowController {
     }
 
     @PostMapping
+    @Tag(name = "Workflows", description = "Обновление процесса || Удаление процесса || Создание процесса || Получение всех процессов по ID пользователя || Получение процесса по ID")
     public ResponseEntity<?> create(@RequestBody WorkflowRequestDto dto) {
         try {
             WorkflowResponseDto created = service.create(dto);
@@ -29,6 +33,7 @@ public class WorkflowController {
     }
 
     @GetMapping("/{ownerId}")
+    @Tag(name = "Workflows")
     public ResponseEntity<?> getByOwner(@PathVariable UUID ownerId) {
         try {
             List<WorkflowResponseDto> workflows = service.findByOwner(ownerId);
@@ -39,6 +44,7 @@ public class WorkflowController {
     }
 
     @GetMapping("/single/{id}")
+    @Tag(name = "Workflows")
     public ResponseEntity<?> getById(@PathVariable UUID id) {
         try {
             Optional<WorkflowResponseDto> result = service.findById(id);
@@ -50,6 +56,7 @@ public class WorkflowController {
     }
 
     @PutMapping("/{id}")
+    @Tag(name = "Workflows")
     public ResponseEntity<?> update(@PathVariable UUID id, @RequestBody WorkflowRequestDto dto) {
         try {
             WorkflowResponseDto updated = service.update(id, dto);
@@ -62,6 +69,7 @@ public class WorkflowController {
     }
 
     @DeleteMapping("/{id}")
+    @Tag(name = "Workflows")
     public ResponseEntity<?> delete(@PathVariable UUID id) {
         try {
             service.delete(id);

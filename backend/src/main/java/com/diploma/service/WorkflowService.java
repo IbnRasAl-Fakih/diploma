@@ -25,7 +25,7 @@ public class WorkflowService {
         workflow.setOwnerId(dto.getOwnerId());
         workflow.setStructure(dto.getStructure());
         workflow.setCreatedAt(LocalDateTime.now());
-        workflow.setUpdatedAt(null);
+        workflow.setUpdatedAt(LocalDateTime.now());
 
         Workflow saved = repository.save(workflow);
         return toDto(saved);
