@@ -1,24 +1,18 @@
 package com.diploma.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class ResultResponseDto {
+public class ResultProcessorDto {
     private UUID nodeId;
     private UUID workflowId;
-    private Map<String, Object> result;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Object result;
 }

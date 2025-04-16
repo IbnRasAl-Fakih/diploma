@@ -50,9 +50,13 @@ public class ResultController {
 
     @GetMapping("/single/{nodeId}")
     @Tag(name = "Results")
-    public ResponseEntity<?> getById(@PathVariable UUID nodeId) {
+    public ResponseEntity<?> getById(
+            @PathVariable UUID nodeId,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "50") int limit
+    ) {
         try {
-            Optional<ResultResponseDto> result = service.getById(nodeId);
+            Optional<ResultResponseDto> result = service.getById(nodeId, offset, limit);
             return result.<ResponseEntity<?>>map(ResponseEntity::ok)
                     .orElse(ResponseEntity.status(404).body(Map.of("error", "Result не найден")));
         } catch (Exception e) {

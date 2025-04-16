@@ -22,7 +22,9 @@ public class GetRequestController {
                     request.getUrl(),
                     request.getHeaders(),
                     request.getQueryParams(),
-                    request.getTimeout()
+                    request.getTimeout(),
+                    request.getWorkflowId(),
+                    request.getNodeId()
             );
             return ResponseEntity.ok(response);
         } catch (Exception e) {
