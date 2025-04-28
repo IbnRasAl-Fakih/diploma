@@ -1,6 +1,5 @@
 package com.diploma.controller;
 
-import com.diploma.dto.UserRequestDto;
 import com.diploma.dto.UserResponseDto;
 import com.diploma.model.User;
 import com.diploma.service.UserService;

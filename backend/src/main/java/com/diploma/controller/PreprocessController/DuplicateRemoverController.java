@@ -1,9 +1,10 @@
-package com.diploma.controller;
+package com.diploma.controller.PreprocessController;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.diploma.service.DuplicateRemoverService;
-import com.diploma.dto.DeduplicationRequest;
+import com.diploma.dto.PreprocessDto.DuplicateRemoverRequest;
+import com.diploma.service.PreprocessService.DuplicateRemoverService;
+
 import java.util.Map;
 
 @RestController
@@ -16,7 +17,7 @@ public class DuplicateRemoverController {
     }
 
     @PostMapping("/remove-duplicates")
-    public Map<String, Object> removeDuplicates(@RequestBody DeduplicationRequest request) {
+    public Map<String, Object> removeDuplicates(@RequestBody DuplicateRemoverRequest request) {
         return duplicateRemoverService.removeDuplicates(request.getData(), request.getSelectedColumns());
     }
 }
