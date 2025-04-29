@@ -1,4 +1,4 @@
-package com.diploma.dto;
+package com.diploma.dto.PreprocessDto;
 
 import lombok.Data;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.Map;
 
 @Data
 public class MissingValuesRequest {
-    private List<List<String>> data;
+    private List<Map<String, Object>> data;
     private Map<String, String> actions;
-    private Map<String, String> fixValues;
+    private Map<String, Object> fixValues;
 }

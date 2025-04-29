@@ -1,4 +1,4 @@
-package com.diploma.dto;
+package com.diploma.dto.IoToolsDto;
 
 import lombok.Getter;
 import lombok.Setter;

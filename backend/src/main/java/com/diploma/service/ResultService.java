@@ -4,8 +4,7 @@ import com.diploma.dto.ResultRequestDto;
 import com.diploma.dto.ResultResponseDto;
 import com.diploma.model.Result;
 import com.diploma.repository.ResultRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
+
 
 import org.springframework.stereotype.Service;
 
