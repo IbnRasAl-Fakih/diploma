@@ -6,23 +6,26 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.UUID;
 
 @Service
 public class JwtService {
 
-    private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
+    private final Key key;
 
     @Value("${jwt.expiration-ms}")
     private long expirationMs;
 
-    private static final String SECRET = "my-super-secret-key-that-is-very-secure-256-bit!!";
+    public JwtService(@Value("${jwt.secret}") String secret) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
 
     public String generateToken(UUID userId, String email) {
         return Jwts.builder()
-                .setSubject(userId.toString())
-                .claim("email", email)
+                .setSubject(email)
+                .claim("id", userId.toString())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -40,18 +43,20 @@ public class JwtService {
 
     public String getEmailFromToken(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(key).build()
+                .setSigningKey(key)
+                .build()
                 .parseClaimsJws(token)
                 .getBody()
-                .get("email", String.class);
+                .getSubject();
     }
 
     public UUID getUserIdFromToken(String token) {
         String id = Jwts.parserBuilder()
-                .setSigningKey(key).build()
+                .setSigningKey(key)
+                .build()
                 .parseClaimsJws(token)
                 .getBody()
-                .getSubject();
+                .get("id", String.class);
         return UUID.fromString(id);
     }
 }

@@ -1,6 +1,5 @@
 package com.diploma.controller;
 
-import com.diploma.dto.UserRequestDto;
 import com.diploma.dto.UserResponseDto;
 import com.diploma.model.User;
 import com.diploma.service.UserService;
@@ -8,6 +7,8 @@ import com.diploma.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;

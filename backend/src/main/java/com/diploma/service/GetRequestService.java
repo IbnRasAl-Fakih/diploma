@@ -49,10 +49,8 @@ public class GetRequestService {
         HttpRequest request = requestBuilder.build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        // Парсим ответ в JSON
         Object parsedJson = mapper.readValue(response.body(), new TypeReference<Object>() {});
 
-        // Сохраняем
         ResultResponseDto saved = processor.putToDatabase(new ResultProcessorDto(nodeId, workflowId, parsedJson));
 
         return "✅ Данные успешно сохранены.";

@@ -1,0 +1,22 @@
+{
+    "ownerId": "a59a423f-d9e2-43bf-984d-c6cc4029a600",
+    "structure": {
+        "nodes": [
+            {
+                "node_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "x_axis": 1245,
+                "y_axis": 5466,
+                "inputs": [],
+                "outputs": ["4959451"],
+                "type": "get_request",
+                "fields": {
+                    "url": "https://app.nocodb.com/api/v2/tables/mqev0lgbfolp1if/records",
+                    "headers": {
+                        "xc-token": "H6ZnhaEL5XLrVmID1jwWGgp5xAeMKwD0NJF706pF"
+                    },
+                    "timeout": 10000
+                }
+            }
+        ]
+    }
+}

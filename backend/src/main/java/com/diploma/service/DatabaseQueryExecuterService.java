@@ -16,8 +16,7 @@ public class DatabaseQueryExecuterService {
     private final GlobalDataStorageService globalDataStorageService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public DatabaseQueryExecuterService(DatabaseConnectionPoolService connectionPoolService,
-                                        GlobalDataStorageService globalDataStorageService) {
+    public DatabaseQueryExecuterService(DatabaseConnectionPoolService connectionPoolService, GlobalDataStorageService globalDataStorageService) {
         this.connectionPoolService = connectionPoolService;
         this.globalDataStorageService = globalDataStorageService;
     }

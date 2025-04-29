@@ -2,7 +2,6 @@ package com.diploma.controller;
 
 import com.diploma.dto.ResultRequestDto;
 import com.diploma.dto.ResultResponseDto;
-import com.diploma.dto.WorkflowResponseDto;
 import com.diploma.service.ResultService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;

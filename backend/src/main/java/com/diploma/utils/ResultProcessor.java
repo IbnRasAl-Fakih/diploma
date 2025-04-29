@@ -47,7 +47,6 @@ public class ResultProcessor {
             throw new RuntimeException("Ошибка при сохранении результата: " + e.getMessage(), e);
         }
     }
-    
 
     public Map<String, Object> normalizeToStandardFormat(Object rawJson) {
         if (rawJson instanceof List<?> list) {
@@ -60,8 +59,7 @@ public class ResultProcessor {
                     return Map.of("list", entry.getValue());
                 }
             }
-            // Нет ни одного массива — вернуть пустой list
-            return Map.of("list", List.of());
+            return Map.of("list", List.of(rawMap));
         }
     
         throw new IllegalArgumentException("Unsupported JSON structure: expected object or array");
