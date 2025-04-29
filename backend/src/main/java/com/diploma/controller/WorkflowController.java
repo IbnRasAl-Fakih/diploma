@@ -4,6 +4,7 @@ import com.diploma.dto.WorkflowRequestDto;
 import com.diploma.dto.WorkflowResponseDto;
 import com.diploma.service.WorkflowService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,8 @@ public class WorkflowController {
     }
 
     @PostMapping
-    @Tag(name = "Workflows", description = "Обновление процесса || Удаление процесса || Создание процесса || Получение всех процессов по ID пользователя || Получение процесса по ID")
+    @Tag(name = "Workflows")
+    @Operation(summary = "Создание процесса")
     public ResponseEntity<?> create(@RequestBody WorkflowRequestDto dto) {
         try {
             WorkflowResponseDto created = service.create(dto);
@@ -34,6 +36,7 @@ public class WorkflowController {
 
     @GetMapping("/{ownerId}")
     @Tag(name = "Workflows")
+    @Operation(summary = "Получение всех процессов по ID пользователя")
     public ResponseEntity<?> getByOwner(@PathVariable UUID ownerId) {
         try {
             List<WorkflowResponseDto> workflows = service.findByOwner(ownerId);
@@ -45,6 +48,7 @@ public class WorkflowController {
 
     @GetMapping("/single/{id}")
     @Tag(name = "Workflows")
+    @Operation(summary = "Получение процесса по ID")
     public ResponseEntity<?> getById(@PathVariable UUID id) {
         try {
             Optional<WorkflowResponseDto> result = service.findById(id);
@@ -57,6 +61,7 @@ public class WorkflowController {
 
     @PutMapping("/{id}")
     @Tag(name = "Workflows")
+    @Operation(summary = "Обновление процесса")
     public ResponseEntity<?> update(@PathVariable UUID id, @RequestBody WorkflowRequestDto dto) {
         try {
             WorkflowResponseDto updated = service.update(id, dto);
@@ -70,6 +75,7 @@ public class WorkflowController {
 
     @DeleteMapping("/{id}")
     @Tag(name = "Workflows")
+    @Operation(summary = "Удаление процесса")
     public ResponseEntity<?> delete(@PathVariable UUID id) {
         try {
             service.delete(id);

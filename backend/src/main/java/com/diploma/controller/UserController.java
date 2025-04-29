@@ -4,11 +4,10 @@ import com.diploma.dto.UserResponseDto;
 import com.diploma.model.User;
 import com.diploma.service.UserService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -24,7 +23,8 @@ public class UserController {
     }
 
     @GetMapping
-    @Tag(name = "Users", description = "Список всех пользователей || Получение пользователя по ID || Удаление пользователя по ID")
+    @Tag(name = "Users")
+    @Operation(summary = "Список всех пользователей")
     public ResponseEntity<?> findAll() {
         try {
             List<User> users = service.findAll();
@@ -45,6 +45,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     @Tag(name = "Users")
+    @Operation(summary = "Получение пользователя по ID")
     public ResponseEntity<?> findById(@PathVariable UUID id) {
         try {
             User user = service.findById(id);
@@ -66,6 +67,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @Tag(name = "Users")
+    @Operation(summary = "Удаление пользователя по ID")
     public ResponseEntity<?> delete(@PathVariable UUID id) {
         try {
             service.delete(id);

@@ -8,6 +8,7 @@ import com.diploma.repository.UserRepository;
 import com.diploma.service.JwtService;
 import com.diploma.service.PendingRegistrationService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.http.ResponseEntity;
@@ -40,9 +41,9 @@ public class AuthController {
         this.jwtService = jwtService;
     }
 
-    // --- Регистрация: отправка кода ---
     @PostMapping("/request-confirmation")
-    @Tag(name = "Sign In |Sign Up", description = "Регистрация нового пользователя: отправка кода на почту || Регистрация нового пользователя: подтверждение кода || Обновление данных пользователя: отправка кода на почту || Обновление данных пользователя: подтверждение кода || Логин через email-password")
+    @Tag(name = "Sign In |Sign Up")
+    @Operation(summary = "Регистрация нового пользователя: отправка кода на почту")
     public ResponseEntity<?> requestConfirmation(@RequestBody ConfirmationRequestDto dto) {
         try {
             pendingService.requestConfirmation(dto.getUsername(), dto.getEmail(), dto.getPassword());
@@ -53,9 +54,9 @@ public class AuthController {
         }
     }
 
-    // --- Регистрация: подтверждение ---
     @PostMapping("/confirm")
     @Tag(name = "Sign In |Sign Up")
+    @Operation(summary = "Регистрация нового пользователя: подтверждение кода")
     public ResponseEntity<?> confirm(@RequestBody EmailCodeDto dto) {
         try {
             PendingRegistration pending = pendingRepo.findByEmail(dto.getEmail())
@@ -92,9 +93,9 @@ public class AuthController {
         }
     }
 
-    // --- Обновление email: отправка кода ---
     @PostMapping("/request-email-update")
     @Tag(name = "Sign In |Sign Up")
+    @Operation(summary = "Обновление данных пользователя: отправка кода на почту")
     public ResponseEntity<?> requestEmailUpdate(@RequestBody EmailUpdateRequestDto dto) {
         try {
             if (!userRepo.existsById(dto.getUserId())) {
@@ -109,9 +110,9 @@ public class AuthController {
         }
     }
 
-    // --- Обновление email: подтверждение ---
     @PostMapping("/confirm-email-update")
     @Tag(name = "Sign In |Sign Up")
+    @Operation(summary = "Обновление данных пользователя: подтверждение кода")
     public ResponseEntity<?> confirmEmailUpdate(@RequestBody EmailCodeDto dto) {
         try {
             PendingRegistration pending = pendingRepo.findByEmail(dto.getEmail())
@@ -147,9 +148,9 @@ public class AuthController {
         }
     }
 
-    // --- Логин: получение токена ---
     @PostMapping("/login")
     @Tag(name = "Sign In |Sign Up")
+    @Operation(summary = "Логин через email-password")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto dto) {
         try {
             User user = userRepo.findByEmail(dto.getEmail())

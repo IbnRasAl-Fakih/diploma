@@ -4,6 +4,7 @@ import com.diploma.dto.ResultRequestDto;
 import com.diploma.dto.ResultResponseDto;
 import com.diploma.service.ResultService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,7 @@ public class ResultController {
 
     @PostMapping
     @Tag(name = "Results")
+    @Operation(summary = "Создание резлультата (нужно убрать)")
     public ResponseEntity<?> create(@RequestBody ResultRequestDto dto) {
         try {
             ResultResponseDto created = service.create(dto);
@@ -38,6 +40,7 @@ public class ResultController {
 
     @GetMapping("/{workflowId}")
     @Tag(name = "Results")
+    @Operation(summary = "Получение всех результатов по ID Процесса")
     public ResponseEntity<?> getByWorkflow(@PathVariable UUID workflowId) {
         try {
             List<ResultResponseDto> results = service.findByWorkflowId(workflowId);
@@ -49,10 +52,8 @@ public class ResultController {
 
     @GetMapping("/single/{nodeId}")
     @Tag(name = "Results")
-    public ResponseEntity<?> getById(
-            @PathVariable UUID nodeId,
-            @RequestParam(defaultValue = "0") int offset,
-            @RequestParam(defaultValue = "50") int limit
+    @Operation(summary = "Получение резльтата по ID")
+    public ResponseEntity<?> getById(@PathVariable UUID nodeId, @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "50") int limit
     ) {
         try {
             Optional<ResultResponseDto> result = service.getById(nodeId, offset, limit);
@@ -65,6 +66,7 @@ public class ResultController {
 
     @PutMapping("/{nodeId}")
     @Tag(name = "Results")
+    @Operation(summary = "Обновление результата (нужно убрать)")
     public ResponseEntity<?> update(@PathVariable UUID nodeId, @RequestBody ResultRequestDto dto) {
         try {
             ResultResponseDto updated = service.update(nodeId, dto);
@@ -78,6 +80,7 @@ public class ResultController {
 
     @DeleteMapping("/{nodeId}")
     @Tag(name = "Results")
+    @Operation(summary = "Удаление результата (возможно нужно убрать)")
     public ResponseEntity<?> delete(@PathVariable UUID nodeId) {
         try {
             service.delete(nodeId);
