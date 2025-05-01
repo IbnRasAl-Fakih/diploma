@@ -1,8 +1,7 @@
 package com.diploma.service;
 
-import com.diploma.dto.ResultProcessorDto;
-import com.diploma.dto.ResultResponseDto;
-import com.diploma.utils.ResultProcessor;
+import com.diploma.utils.NodeExecutor;
+import com.diploma.utils.NodeType;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
@@ -14,23 +13,44 @@ import java.net.http.HttpResponse;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-public class GetRequestService {
+@NodeType("get_request")
+public class GetRequestService implements NodeExecutor{
 
-    private final ResultProcessor processor;
     private final ObjectMapper mapper;
 
-    public GetRequestService(ResultProcessor processor) {
-        this.processor = processor;
+    public GetRequestService() {
         this.mapper = new ObjectMapper();
     }
 
-    public String sendGetRequest(String url, Map<String, String> headers, Map<String, String> queryParams, int timeoutMillis, UUID workflowId, UUID nodeId) throws Exception {
+    @Override
+    public Object execute(Map<String, Object> fields, List<String> inputs) {
+        try {
+            String url = (String) fields.get("url");
 
+            @SuppressWarnings("unchecked")
+            Map<String, String> headers = (Map<String, String>) fields.getOrDefault("headers", Map.of());
+
+            @SuppressWarnings("unchecked")
+            Map<String, String> queryParams = (Map<String, String>) fields.getOrDefault("queryParams", Map.of());
+
+            int timeoutMillis = (Integer) fields.get("timeout");
+
+            System.out.println("\nurl: " + url + ", headers: " + headers.toString() + "timeout: " + timeoutMillis + "\n"); // delete
+
+            return sendGetRequest(url, headers, queryParams, timeoutMillis);
+        } catch (Exception e) {
+            System.err.println("❌ Error in execute(): " + e.getMessage());
+            e.printStackTrace();
+            return Map.of("error", e.getMessage());
+        }
+    }
+
+    public Object sendGetRequest(String url, Map<String, String> headers, Map<String, String> queryParams, int timeoutMillis) throws Exception {
         String fullUrl = url + "?" + getQueryParamString(queryParams);
 
         HttpClient client = HttpClient.newBuilder()
@@ -49,11 +69,7 @@ public class GetRequestService {
         HttpRequest request = requestBuilder.build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        Object parsedJson = mapper.readValue(response.body(), new TypeReference<Object>() {});
-
-        ResultResponseDto saved = processor.putToDatabase(new ResultProcessorDto(nodeId, workflowId, parsedJson));
-
-        return "✅ Данные успешно сохранены.";
+        return mapper.readValue(response.body(), new TypeReference<Object>() {});
     }
 
     private String getQueryParamString(Map<String, String> queryParams) {

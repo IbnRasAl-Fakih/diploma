@@ -18,15 +18,13 @@ public class GetRequestController {
     @PostMapping("/get")
     public ResponseEntity<String> performGetRequest(@RequestBody GetRequestDTO request) {
         try {
-            String response = getRequestService.sendGetRequest(
+            Object response = getRequestService.sendGetRequest(
                     request.getUrl(),
                     request.getHeaders(),
                     request.getQueryParams(),
-                    request.getTimeout(),
-                    request.getWorkflowId(),
-                    request.getNodeId()
+                    request.getTimeout()
             );
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(response.toString());
         } catch (Exception e) {
             return ResponseEntity.status(500).body("❌ Error while making GET request: " + e.getMessage());
         }

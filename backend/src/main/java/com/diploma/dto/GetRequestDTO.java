@@ -13,6 +13,4 @@ public class GetRequestDTO {
     private Map<String, String> headers;
     private Map<String, String> queryParams;
     private int timeout;
-    private UUID nodeId;
-    private UUID workflowId;
 }
