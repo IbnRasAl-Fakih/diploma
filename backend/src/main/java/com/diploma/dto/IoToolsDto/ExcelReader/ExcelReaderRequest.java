@@ -1,4 +1,4 @@
-package com.diploma.dto.IoToolsDto;
+package com.diploma.dto.IoToolsDto.ExcelReader;
 
 import lombok.Getter;
 import lombok.Setter;

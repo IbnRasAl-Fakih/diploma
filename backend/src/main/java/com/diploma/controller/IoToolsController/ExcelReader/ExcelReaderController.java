@@ -1,6 +1,6 @@
-package com.diploma.controller.IoToolsController;
+package com.diploma.controller.IoToolsController.ExcelReader;
 
-import com.diploma.dto.IoToolsDto.ExcelReaderRequest;
+import com.diploma.dto.IoToolsDto.ExcelReader.*;
 import com.diploma.service.IoToolsService.ExcelReadService;
 
 import io.swagger.v3.oas.annotations.Operation;
