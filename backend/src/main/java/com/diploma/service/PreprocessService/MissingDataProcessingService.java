@@ -1,16 +1,45 @@
 package com.diploma.service.PreprocessService;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.diploma.dto.PreprocessDto.MissingValuesRequest;
+import com.diploma.service.ResultService;
+import com.diploma.utils.NodeExecutor;
+import com.diploma.utils.NodeType;
 
 import java.util.*;
 
 @Service
-public class MissingDataProcessingService {
-    private static final Logger logger = LoggerFactory.getLogger(MissingDataProcessingService.class);
+@NodeType("missing_data_processing")
+public class MissingDataProcessingService implements NodeExecutor {
+
+    private final ResultService resultService;
+
+    public MissingDataProcessingService(ResultService resultService) {
+        this.resultService = resultService;
+    }
+
+@Override
+public Object execute(Map<String, Object> fields, List<String> inputs) {
+    if (inputs.isEmpty()) {
+        throw new IllegalArgumentException("Missing Data Processing требует хотя бы один input (nodeId)");
+    }
+
+
+    UUID inputNodeId = UUID.fromString(inputs.get(0));
+
+    List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
+
+    MissingValuesRequest request = new MissingValuesRequest();
+    request.setData(data);
+    request.setActions((Map<String, String>) fields.get("actions"));
+    request.setFixValues((Map<String, Object>) fields.get("fixValues"));
+
+    List<Map<String, Object>> processedData = processMissingValues(request);
+
+    return Map.of("processedData", processedData);
+}
+
 
     public List<Map<String, Object>> processMissingValues(MissingValuesRequest request) {
         List<Map<String, Object>> data = request.getData();

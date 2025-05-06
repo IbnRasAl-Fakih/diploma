@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -82,6 +83,20 @@ public class ResultService {
 
     public void delete(UUID nodeId) {
         resultRepository.deleteById(nodeId);
+    }
+
+    public List<Map<String, Object>> getDataFromNode(UUID nodeId) {
+        return getById(nodeId, 0, Integer.MAX_VALUE)
+                .map(dto -> {
+                    Object list = dto.getResult().get("list");
+                    if (list instanceof List<?> rawList) {
+                        if (!rawList.isEmpty() && rawList.get(0) instanceof Map<?, ?>) {
+                            return (List<Map<String, Object>>) list;
+                        }
+                    }
+                    throw new IllegalStateException("Результат node " + nodeId + " не содержит допустимых данных");
+                })
+                .orElseThrow(() -> new NoSuchElementException("Результат с nodeId " + nodeId + " не найден"));
     }
 
     private ResultResponseDto mapToDto(Result r) {

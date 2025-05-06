@@ -12,5 +12,5 @@ public class RowFilterRequest {
     private String operator; // =, !=, <, >, <=, >=, contains
     private String value; // значение для сравнения
     private boolean caseSensitive; // только для строк 
-    private boolean excludeMatches = false;
+    private boolean excludeMatches = false; 
 }

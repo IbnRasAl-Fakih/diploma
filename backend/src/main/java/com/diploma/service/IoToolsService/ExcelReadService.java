@@ -40,7 +40,7 @@ public class ExcelReadService {
                 headers.add(cell.getStringCellValue());
             }
 
-            // Чтение данных
+
             List<Map<String, Object>> result = new ArrayList<>();
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);

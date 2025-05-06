@@ -51,7 +51,7 @@ public class RowFilterService {
         };
 
         if (req.isExcludeMatches()) {
-            predicate = predicate.negate(); // инвертируем условие
+            predicate = predicate.negate(); 
         }
 
         return req.getData().stream().filter(predicate).toList();
