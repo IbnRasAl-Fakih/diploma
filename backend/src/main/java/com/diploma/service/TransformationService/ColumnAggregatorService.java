@@ -1,14 +1,45 @@
 package com.diploma.service.TransformationService;
 
 import com.diploma.dto.TransformationDto.ColumnAggregatorRequest;
+import com.diploma.service.ResultService;
+import com.diploma.utils.NodeExecutor;
+import com.diploma.utils.NodeType;
 
 import org.springframework.stereotype.Service;
+
 
 import java.util.*;
 
 @Service
-public class ColumnAggregatorService {
+@NodeType("column_aggregator")
+public class ColumnAggregatorService implements NodeExecutor {
+        
+    private final ResultService resultService;
 
+    public ColumnAggregatorService(ResultService resultService) {
+        this.resultService = resultService;
+    }
+
+    @Override
+    public Object execute(Map<String, Object> fields, List<String> inputs) {
+        if (inputs.isEmpty()) {
+            throw new IllegalArgumentException("ColumnAggregator требует хотя бы один input (nodeId)");
+        }
+
+        UUID inputNodeId = UUID.fromString(inputs.get(0));
+        List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
+
+        ColumnAggregatorRequest request = new ColumnAggregatorRequest();
+        request.setData(data);
+        request.setFunction((String) fields.get("function"));
+        request.setColumns((List<String>) fields.get("columns"));
+        request.setOutputColumnName((String) fields.get("outputColumnName"));
+
+        List<Map<String, Object>> aggregated = aggregateColumns(request);
+
+        return Map.of("Aggregated", aggregated);
+    }
+    
     public List<Map<String, Object>> aggregateColumns(ColumnAggregatorRequest req) {
         List<Map<String, Object>> result = new ArrayList<>();
 

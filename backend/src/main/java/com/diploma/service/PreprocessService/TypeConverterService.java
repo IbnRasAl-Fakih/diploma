@@ -3,6 +3,9 @@ package com.diploma.service.PreprocessService;
 import org.springframework.stereotype.Service;
 
 import com.diploma.dto.PreprocessDto.TypeConverterRequest;
+import com.diploma.service.ResultService;
+import com.diploma.utils.NodeExecutor;
+import com.diploma.utils.NodeType;
 
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -13,7 +16,31 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @Service
-public class TypeConverterService {
+@NodeType("type_converter")
+public class TypeConverterService implements NodeExecutor {
+    private final ResultService resultService;
+
+    public TypeConverterService(ResultService resultService) {
+        this.resultService = resultService;
+    }
+    
+    @Override
+    public Object execute(Map<String, Object> fields, List<String> inputs) {
+        if (inputs.isEmpty()) {
+            throw new IllegalArgumentException("TypeConverter требует хотя бы один input (nodeId)");
+        }
+
+        UUID inputNodeId = UUID.fromString(inputs.get(0));
+        List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
+
+        TypeConverterRequest request = new TypeConverterRequest();
+        request.setData(data);
+        request.setColumnTypes((Map<String, String>) fields.get("columnTypes"));
+
+        List<Map<String, Object>> converted = convertTypes(request);
+
+        return Map.of("Converted", converted);
+    }
 
 private static final List<DateTimeFormatter> dateFormats = List.of(
         DateTimeFormatter.ofPattern("dd.MM.yyyy"),

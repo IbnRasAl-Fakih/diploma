@@ -1,6 +1,10 @@
 package com.diploma.service.PreprocessService;
 
+import com.diploma.dto.PreprocessDto.MissingValuesRequest;
 import com.diploma.dto.PreprocessDto.RowFilterRequest;
+import com.diploma.service.ResultService;
+import com.diploma.utils.NodeExecutor;
+import com.diploma.utils.NodeType;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -12,9 +16,41 @@ import java.util.function.Predicate;
 
 
 @Service
-public class RowFilterService {
+@NodeType("row_filter")
+public class RowFilterService implements NodeExecutor {
     Logger logger = LogManager.getLogger(RowFilterService.class);
-    
+    private final ResultService resultService;
+
+    public RowFilterService(ResultService resultService) {
+        this.resultService = resultService;
+    }
+
+@Override
+public Object execute(Map<String, Object> fields, List<String> inputs) {
+    if (inputs.isEmpty()) {
+        throw new IllegalArgumentException("Missing Data Processing требует хотя бы один input (nodeId)");
+    }
+
+
+    UUID inputNodeId = UUID.fromString(inputs.get(0));
+
+    List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
+
+    RowFilterRequest request = new RowFilterRequest();
+    request.setData(data);
+    request.setColumn((String) fields.get("column"));
+    request.setOperator((String) fields.get("operator"));
+    request.setValue((String) fields.get("value"));
+    request.setCaseSensitive((Boolean) fields.get("caseSensitive"));
+    request.setExcludeMatches((Boolean) fields.get("excludeMatches"));
+
+
+    List<Map<String, Object>> filtred = filterRows(request);
+
+    return Map.of("filtred", filtred);
+}
+
+
     public List<Map<String, Object>> filterRows(RowFilterRequest req) {
         Predicate<Map<String, Object>> predicate = row -> {
             Object val = row.get(req.getColumn());

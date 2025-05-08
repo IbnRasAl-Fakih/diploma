@@ -1,12 +1,41 @@
 package com.diploma.service.TransformationService;
 
 import com.diploma.dto.TransformationDto.ColumnRenamerRequest;
+import com.diploma.service.ResultService;
+import com.diploma.utils.NodeExecutor;
+import com.diploma.utils.NodeType;
+
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
-public class ColumnRenamerService {
+@NodeType("column_renamer")
+public class ColumnRenamerService implements NodeExecutor {
+
+    private final ResultService resultService;
+
+    public ColumnRenamerService(ResultService resultService) {
+        this.resultService = resultService;
+    }
+    @Override
+    public Object execute(Map<String, Object> fields, List<String> inputs) {
+        if (inputs.isEmpty()) {
+            throw new IllegalArgumentException("ColumnRenamerService требует хотя бы один input (nodeId)");
+        }
+
+        UUID inputNodeId = UUID.fromString(inputs.get(0));
+        List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
+
+        ColumnRenamerRequest request = new ColumnRenamerRequest();
+        request.setData(data);
+        request.setRenameMap((Map<String, String>) fields.get(" "));
+
+        List<Map<String, Object>> result = renameColumns(request);
+
+        return Map.of("result", result);
+    }
+
 
     public List<Map<String, Object>> renameColumns(ColumnRenamerRequest req) {
         List<Map<String, Object>> renamed = new ArrayList<>();
