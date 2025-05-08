@@ -15,8 +15,7 @@ public class DatabaseController {
     private final DatabaseConnectorService connectorService;
     private final DatabaseConnectionPoolService connectionPoolService;
 
-    public DatabaseController(DatabaseConnectorService connectorService,
-                              DatabaseConnectionPoolService connectionPoolService) {
+    public DatabaseController(DatabaseConnectorService connectorService, DatabaseConnectionPoolService connectionPoolService) {
         this.connectorService = connectorService;
         this.connectionPoolService = connectionPoolService;
     }
@@ -24,13 +23,13 @@ public class DatabaseController {
     @PostMapping("/connect")
     public ResponseEntity<?> connectToDatabase(@RequestBody DatabaseConnectionRequest request) {
         try {
-            String sessionId = connectorService.connect(
+            Map<String, String> sessionId = connectorService.connect(
                     request.getUrl(),
                     request.getUsername(),
                     request.getPassword(),
                     request.getDriver()
             );
-            return ResponseEntity.ok(Map.of("sessionId", sessionId));
+            return ResponseEntity.ok(sessionId);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("❌ Ошибка подключения: " + e.getMessage());
         }

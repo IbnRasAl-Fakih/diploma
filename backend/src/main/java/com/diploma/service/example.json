@@ -2,18 +2,18 @@
     "workflowId": "47f731d6-1304-47af-aceb-48be62f21c07",
     "nodes": [
         {
-            "node_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            "type": "get_request",
+            "node_id": "8ecbb084-a210-4409-a740-f363dd963b7a",
+            "type": "db_connector",
             "x_axis": 1245,
             "y_axis": 5466,
             "inputs": [],
             "outputs": ["4959451"],
             "fields": {
-                "url": "https://app.nocodb.com/api/v2/tables/mqev0lgbfolp1if/records",
-                "headers": {
-                    "xc-token": "H6ZnhaEL5XLrVmID1jwWGgp5xAeMKwD0NJF706pF"
-                },
-                "timeout": 10000
+                "databaseType": "PostgreSQL",
+                "url": "jdbc:postgresql://localhost:5432/Quizlet",
+                "username": "postgres",
+                "password": "ibnrasalfakih12141522",
+                "driver": "org.postgresql.Driver"
             }
         }
 	]
