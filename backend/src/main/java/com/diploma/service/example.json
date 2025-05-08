@@ -1,5 +1,5 @@
 {
-    "workflowId": "47f731d6-1304-47af-aceb-48be62f21c07",
+    "workflowId": "d3ff01c6-0f64-4596-9a55-10a55c56ac8d",
     "nodes": [
         {
             "node_id": "8ecbb084-a210-4409-a740-f363dd963b7a",
@@ -14,6 +14,17 @@
                 "username": "postgres",
                 "password": "ibnrasalfakih12141522",
                 "driver": "org.postgresql.Driver"
+            }
+        },
+        {
+            "node_id": "8053b830-b052-4944-a0d0-6f5dfae9023a",
+            "type": "db_query_executor",
+            "x_axis": 1245,
+            "y_axis": 5466,
+            "inputs": ["8ecbb084-a210-4409-a740-f363dd963b7a"],
+            "outputs": ["4959451"],
+            "fields": {
+                "statementQuery": "select * from openended"
             }
         }
 	]

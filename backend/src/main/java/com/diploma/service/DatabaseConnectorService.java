@@ -29,8 +29,6 @@ public class DatabaseConnectorService implements NodeExecutor{
             String password = (String) fields.get("password");
             String driver = (String) fields.get("driver");
 
-            System.out.println("\nurl: " + url + ", username: " + username + ", password: " + password + ", driver: " + driver + "\n"); // delete
-
             return connect(url, username, password, driver);
         } catch (Exception e) {
             System.err.println("❌ Error in execute(): " + e.getMessage());

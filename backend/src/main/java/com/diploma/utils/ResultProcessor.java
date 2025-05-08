@@ -51,18 +51,46 @@ public class ResultProcessor {
 
     public Map<String, Object> normalizeToStandardFormat(Object rawJson) {
         if (rawJson instanceof List<?> list) {
-            return Map.of("list", list);
+            List<Object> fixedList = fixListElements(list);
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("list", fixedList);
+            return result;
         }
     
         if (rawJson instanceof Map<?, ?> rawMap) {
             for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
-                if (entry.getValue() instanceof List<?>) {
-                    return Map.of("list", entry.getValue());
+                if (entry.getValue() instanceof List<?> innerList) {
+                    List<Object> fixedList = fixListElements(innerList);
+                    Map<String, Object> result = new LinkedHashMap<>();
+                    result.put("list", fixedList);
+                    return result;
                 }
             }
-            return Map.of("list", List.of(rawMap));
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("list", List.of(fixMap(rawMap)));
+            return result;
         }
     
         throw new IllegalArgumentException("Unsupported JSON structure: expected object or array");
     }
+    
+    private List<Object> fixListElements(List<?> list) {
+        List<Object> fixed = new ArrayList<>();
+        for (Object item : list) {
+            if (item instanceof Map<?, ?> mapItem) {
+                fixed.add(fixMap(mapItem));
+            } else {
+                fixed.add(item);
+            }
+        }
+        return fixed;
+    }
+    
+    private Map<String, Object> fixMap(Map<?, ?> rawMap) {
+        LinkedHashMap<String, Object> fixedMap = new LinkedHashMap<>();
+        for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
+            fixedMap.put(entry.getKey().toString(), entry.getValue());
+        }
+        return fixedMap;
+    } 
 }
