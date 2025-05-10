@@ -2,6 +2,9 @@ package com.diploma.config;
 
 import com.diploma.security.JwtAuthenticationFilter;
 import com.diploma.security.JwtTokenProvider;
+
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -57,16 +60,23 @@ public class SecurityConfig {
         return http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "swagger-ui.html",
-                    "/v3/api-docs/**",
-                    "/swagger-ui/**",
-                    "/swagger-resources/**",
-                    "/webjars/**",
-                    "/api/auth/**"
-                ).permitAll()
-                .anyRequest().authenticated()
+            .requestMatchers(
+                "swagger-ui.html",
+                "/v3/api-docs/**",
+                "/swagger-ui/**",
+                "/swagger-resources/**",
+                "/webjars/**",
+                "/api/auth/**"
+            ).permitAll()
+            .anyRequest().authenticated()
             )
+            .cors(cors -> cors.configurationSource(request -> {
+            var corsConfig = new org.springframework.web.cors.CorsConfiguration();
+            corsConfig.setAllowedOrigins(List.of("http://localhost:3000"));
+            corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+            corsConfig.setAllowedHeaders(List.of("*"));
+            return corsConfig;
+            }))
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
             .build();
     }
