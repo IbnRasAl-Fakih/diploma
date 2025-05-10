@@ -16,7 +16,7 @@
                 <constraints nullable="false" foreignKeyName="fk_results_workflow" references="workflows(id)"/>
             </column>
 
-            <column name="result" type="JSONB">
+            <column name="result" type="JSON">
                 <constraints nullable="false"/>
             </column>
 

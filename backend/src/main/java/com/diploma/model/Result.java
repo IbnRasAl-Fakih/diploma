@@ -2,8 +2,10 @@ package com.diploma.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+
+import io.hypersistence.utils.hibernate.type.json.JsonType;
+import org.hibernate.annotations.Type;
+
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
@@ -24,8 +26,8 @@ public class Result {
     @Column(name = "workflow_id", nullable = false)
     private UUID workflowId;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb", nullable = false)
+    @Type(JsonType.class)
+    @Column(name = "result", columnDefinition = "json", nullable = false)
     private Map<String, Object> result;
 
     @Column(name = "created_at")

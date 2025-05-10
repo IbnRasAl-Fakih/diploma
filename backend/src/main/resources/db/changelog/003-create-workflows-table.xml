@@ -14,7 +14,7 @@
             <column name="owner_id" type="UUID">
                 <constraints nullable="false" foreignKeyName="fk_workflows_users" references="users(id)"/>
             </column>
-            <column name="structure" type="JSONB"/>
+            <column name="structure" type="JSON"/>
             <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
             <column name="updated_at" type="TIMESTAMP"/>
         </createTable>

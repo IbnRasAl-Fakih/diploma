@@ -19,12 +19,12 @@ public class ResultProcessor {
     }
 
     public ResultResponseDto putToDatabase(ResultProcessorDto dto) {
+        Map<String, Object> normalized = normalizeToStandardFormat(dto.getResult());
+
         System.out.println("************************************"); //delete
-        System.out.println(dto.getResult().toString());               //delete
+        System.out.println(normalized.toString());               //delete
         System.out.println("************************************"); //delete
 
-        Map<String, Object> normalized = normalizeToStandardFormat(dto.getResult());
-    
         try {
             Result result = Result.builder()
                     .nodeId(dto.getNodeId())
