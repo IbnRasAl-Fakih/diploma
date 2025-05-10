@@ -2,8 +2,8 @@
     "workflowId": "21ea26e9-7b91-4af0-a7c0-4e38b7e473fd",
     "nodes": [
         {
-            "node_id": "dfa95a81-c784-4d46-ae4e-1fa11311472c",
-            "type": "delete_request",
+            "node_id": "ccdeee35-1da4-4ba5-91d5-f6a4a2c46d88",
+            "type": "patch_request",
             "inputs": [],
             "outputs": [],
             "fields": {
@@ -13,11 +13,11 @@
                     "Content-Type": "application/json"
                 },
                 "body": [
-                        {
-                            "Id": 9
-                        }
-                    ]
-                ,
+                {
+                    "Id": 10,
+                    "Name": "Mura"
+                }
+                ],
                 "timeout": 10000
             }
         }

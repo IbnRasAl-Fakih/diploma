@@ -17,13 +17,13 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
-@NodeType("post_request")
-public class PostRequestService implements NodeExecutor {
+@NodeType("patch_request")
+public class PatchRequestService implements NodeExecutor {
 
     private final ResultService resultService;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public PostRequestService (ResultService resultService) {
+    public PatchRequestService (ResultService resultService) {
         this.resultService = resultService;
     }
 
@@ -45,21 +45,23 @@ public class PostRequestService implements NodeExecutor {
 
             int timeoutMillis = (Integer) fields.get("timeout");
 
-            return sendPostRequest(url, headers, body, timeoutMillis);
+            return sendPatchRequest(url, headers, body, timeoutMillis);
         } catch (Exception e) {
             return Map.of("error", e.getMessage());
         }
     }
 
-    public Object sendPostRequest(String url, Map<String, String> headers, List<Map<String, Object>> body, int timeoutMillis) throws Exception {
-        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMillis(timeoutMillis)).build();
+    public Object sendPatchRequest(String url, Map<String, String> headers, List<Map<String, Object>> body, int timeoutMillis) throws Exception {
+        HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofMillis(timeoutMillis))
+                .build();
 
         String requestBody = mapper.writeValueAsString(body);
 
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .timeout(Duration.ofMillis(timeoutMillis))
-                .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8));
+                .method("PATCH", HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8));
 
         if (headers != null) {
             headers.forEach(requestBuilder::header);
