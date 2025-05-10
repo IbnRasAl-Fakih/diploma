@@ -1,16 +1,16 @@
-package com.diploma.dto;
+package com.diploma.dto.HttpDto;
 
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Getter
 @Setter
-public class GetRequestDTO {
+public class PostRequestDto {
     private String url;
     private Map<String, String> headers;
-    private Map<String, String> queryParams;
+    private List<Map<String, Object>> body;
     private int timeout;
 }

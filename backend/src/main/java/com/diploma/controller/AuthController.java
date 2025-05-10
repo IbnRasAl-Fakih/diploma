@@ -5,8 +5,8 @@ import com.diploma.model.PendingRegistration;
 import com.diploma.model.User;
 import com.diploma.repository.PendingRegistrationRepository;
 import com.diploma.repository.UserRepository;
-import com.diploma.service.JwtService;
-import com.diploma.service.PendingRegistrationService;
+import com.diploma.utils.JwtService;
+import com.diploma.utils.PendingRegistrationService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

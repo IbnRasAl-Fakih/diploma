@@ -1,4 +1,4 @@
-package com.diploma.service;
+package com.diploma.utils;
 
 import org.springframework.stereotype.Service;
 

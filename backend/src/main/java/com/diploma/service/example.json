@@ -1,30 +1,25 @@
 {
-    "workflowId": "fd19bf9a-1a6c-4dc1-8d88-bfdb1cebedfd",
+    "workflowId": "21ea26e9-7b91-4af0-a7c0-4e38b7e473fd",
     "nodes": [
         {
-            "node_id": "8ecbb084-a210-4409-a740-f363dd963b7a",
-            "type": "db_connector",
-            "x_axis": 1245,
-            "y_axis": 5466,
+            "node_id": "dfa95a81-c784-4d46-ae4e-1fa11311472c",
+            "type": "post_request",
             "inputs": [],
-            "outputs": ["4959451"],
+            "outputs": [],
             "fields": {
-                "databaseType": "PostgreSQL",
-                "url": "jdbc:postgresql://localhost:5432/Quizlet",
-                "username": "postgres",
-                "password": "ibnrasalfakih12141522",
-                "driver": "org.postgresql.Driver"
-            }
-        },
-        {
-            "node_id": "8053b830-b052-4944-a0d0-6f5dfae9023a",
-            "type": "db_query_executor",
-            "x_axis": 1245,
-            "y_axis": 5466,
-            "inputs": ["8ecbb084-a210-4409-a740-f363dd963b7a"],
-            "outputs": ["4959451"],
-            "fields": {
-                "statementQuery": "select * from openended"
+                "url": "https://app.nocodb.com/api/v2/tables/mj0t5xdxuoqgg99/records",
+                "headers": {
+                    "xc-token": "H6ZnhaEL5XLrVmID1jwWGgp5xAeMKwD0NJF706pF",
+                    "Content-Type": "application/json"
+                },
+                "body": [
+                        {
+                            "Name": "Rasul",
+                            "Age": 20
+                        }
+                    ]
+                ,
+                "timeout": 10000
             }
         }
 	]

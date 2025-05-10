@@ -1,4 +1,4 @@
-package com.diploma.service;
+package com.diploma.utils;
 
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;

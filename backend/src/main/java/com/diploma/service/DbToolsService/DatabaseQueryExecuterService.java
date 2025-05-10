@@ -1,7 +1,9 @@
-package com.diploma.service;
+package com.diploma.service.DbToolsService;
 
 import org.springframework.stereotype.Service;
 
+import com.diploma.service.ResultService;
+import com.diploma.utils.DatabaseConnectionPoolService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
 
@@ -46,8 +48,6 @@ public class DatabaseQueryExecuterService implements NodeExecutor {
             if (statementQuery == null || statementQuery.isBlank()) {
                 throw new IllegalArgumentException("Поле 'statementQuery' не должно быть пустым");
             }
-
-            System.out.println("\nsessionId: " + sessionId + ", staementQuery: " + statementQuery + "\n"); //delete
 
             List<Map<String, Object>> result = executeQuery(sessionId, statementQuery);
             return Map.of("result", result);

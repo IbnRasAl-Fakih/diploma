@@ -1,4 +1,4 @@
-package com.diploma.service;
+package com.diploma.service.HttpService;
 
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
@@ -39,8 +39,6 @@ public class GetRequestService implements NodeExecutor{
             Map<String, String> queryParams = (Map<String, String>) fields.getOrDefault("queryParams", Map.of());
 
             int timeoutMillis = (Integer) fields.get("timeout");
-
-            System.out.println("\nurl: " + url + ", headers: " + headers.toString() + "timeout: " + timeoutMillis + "\n"); // delete
 
             return sendGetRequest(url, headers, queryParams, timeoutMillis);
         } catch (Exception e) {

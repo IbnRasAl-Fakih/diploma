@@ -1,8 +1,9 @@
-package com.diploma.controller;
+package com.diploma.controller.DbToolsController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.diploma.service.DatabaseConnectionPoolService;
-import com.diploma.service.DatabaseQueryExecuterService;
+import com.diploma.service.DbToolsService.DatabaseQueryExecuterService;
+import com.diploma.utils.DatabaseConnectionPoolService;
+
 import java.util.List;
 import java.util.Map;
 

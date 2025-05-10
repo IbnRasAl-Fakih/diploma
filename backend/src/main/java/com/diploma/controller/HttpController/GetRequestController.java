@@ -1,7 +1,8 @@
-package com.diploma.controller;
+package com.diploma.controller.HttpController;
 
-import com.diploma.dto.GetRequestDTO;
-import com.diploma.service.GetRequestService;
+import com.diploma.dto.HttpDto.GetRequestDTO;
+import com.diploma.service.HttpService.GetRequestService;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

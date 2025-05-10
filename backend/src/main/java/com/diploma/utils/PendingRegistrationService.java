@@ -1,7 +1,8 @@
-package com.diploma.service;
+package com.diploma.utils;
 
 import com.diploma.model.PendingRegistration;
 import com.diploma.repository.PendingRegistrationRepository;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

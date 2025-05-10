@@ -22,7 +22,7 @@ public class ResultProcessor {
         Map<String, Object> normalized = normalizeToStandardFormat(dto.getResult());
 
         System.out.println("************************************"); //delete
-        System.out.println(normalized.toString());               //delete
+        System.out.println(dto.getResult().toString());               //delete
         System.out.println("************************************"); //delete
 
         try {

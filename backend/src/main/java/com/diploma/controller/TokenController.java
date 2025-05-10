@@ -1,11 +1,11 @@
 package com.diploma.controller;
 
-import com.diploma.service.JwtService;
-
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.diploma.utils.JwtService;
 
 import java.util.Map;
 

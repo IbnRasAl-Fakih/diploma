@@ -1,6 +1,5 @@
 package com.diploma.service.TransformationService;
 
-import com.diploma.dto.PreprocessDto.RowFilterRequest;
 import com.diploma.dto.TransformationDto.ColumnAppenderRequest;
 import com.diploma.service.ResultService;
 import com.diploma.utils.NodeExecutor;

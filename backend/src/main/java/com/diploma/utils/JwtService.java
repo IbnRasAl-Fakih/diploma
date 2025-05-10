@@ -1,4 +1,4 @@
-package com.diploma.service;
+package com.diploma.utils;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

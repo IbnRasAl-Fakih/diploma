@@ -1,8 +1,9 @@
-package com.diploma.controller;
+package com.diploma.controller.DbToolsController;
 
-import com.diploma.dto.DatabaseConnectionRequest;
-import com.diploma.service.DatabaseConnectionPoolService;
-import com.diploma.service.DatabaseConnectorService;
+import com.diploma.dto.DbToolsDto.DatabaseConnectionRequest;
+import com.diploma.service.DbToolsService.DatabaseConnectorService;
+import com.diploma.utils.DatabaseConnectionPoolService;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
