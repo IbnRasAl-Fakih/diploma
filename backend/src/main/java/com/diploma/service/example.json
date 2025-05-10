@@ -3,7 +3,7 @@
     "nodes": [
         {
             "node_id": "dfa95a81-c784-4d46-ae4e-1fa11311472c",
-            "type": "post_request",
+            "type": "delete_request",
             "inputs": [],
             "outputs": [],
             "fields": {
@@ -14,8 +14,7 @@
                 },
                 "body": [
                         {
-                            "Name": "Rasul",
-                            "Age": 20
+                            "Id": 9
                         }
                     ]
                 ,
