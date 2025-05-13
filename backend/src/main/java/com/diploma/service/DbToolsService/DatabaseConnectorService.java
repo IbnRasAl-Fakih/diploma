@@ -32,7 +32,7 @@ public class DatabaseConnectorService implements NodeExecutor{
 
             return connect(url, username, password, driver);
         } catch (Exception e) {
-            System.err.println("❌ Error in execute(): " + e.getMessage());
+            System.err.println("Error in execute(): " + e.getMessage());
             e.printStackTrace();
             return Map.of("error", e.getMessage());
         }

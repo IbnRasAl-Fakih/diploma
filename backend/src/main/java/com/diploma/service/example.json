@@ -2,23 +2,11 @@
     "workflowId": "21ea26e9-7b91-4af0-a7c0-4e38b7e473fd",
     "nodes": [
         {
-            "node_id": "ccdeee35-1da4-4ba5-91d5-f6a4a2c46d88",
-            "type": "patch_request",
-            "inputs": [],
+            "node_id": "2f7ce3da-1851-4c8d-a6b3-cb7f9ab33c93",
+            "type": "db_table_list",
+            "inputs": ["8ecbb084-a210-4409-a740-f363dd963b7a"],
             "outputs": [],
             "fields": {
-                "url": "https://app.nocodb.com/api/v2/tables/mj0t5xdxuoqgg99/records",
-                "headers": {
-                    "xc-token": "H6ZnhaEL5XLrVmID1jwWGgp5xAeMKwD0NJF706pF",
-                    "Content-Type": "application/json"
-                },
-                "body": [
-                {
-                    "Id": 10,
-                    "Name": "Mura"
-                }
-                ],
-                "timeout": 10000
             }
         }
 	]
