@@ -3,7 +3,6 @@ package com.diploma.service;
 import com.diploma.model.User;
 import com.diploma.repository.UserRepository;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,11 +12,9 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository repository;
-    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository repository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository repository) {
         this.repository = repository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     public List<User> findAll() {
