@@ -6,7 +6,7 @@
         http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="001" author="yourname">
+    <changeSet id="001" author="Rassul">
         <createTable tableName="users">
             <column name="id" type="UUID">
                 <constraints primaryKey="true" nullable="false"/>

@@ -11,5 +11,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class WorkflowRequestDto {
     private UUID ownerId;
+    private String title;
     private Map<String, Object> structure;
 }

@@ -20,6 +20,9 @@ public class Workflow {
     @Id
     private UUID id;
 
+    @Column(nullable = false, unique = true)
+    private String title;
+
     @Column(name = "owner_id", nullable = false)
     private UUID ownerId;
 

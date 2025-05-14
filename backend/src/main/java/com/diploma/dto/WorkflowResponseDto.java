@@ -12,6 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class WorkflowResponseDto {
     private UUID id;
+    private String title;
     private UUID ownerId;
     private Map<String, Object> structure;
     private LocalDateTime createdAt;

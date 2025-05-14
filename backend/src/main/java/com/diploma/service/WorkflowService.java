@@ -22,6 +22,7 @@ public class WorkflowService {
     public WorkflowResponseDto create(WorkflowRequestDto dto) {
         Workflow workflow = new Workflow();
         workflow.setId(UUID.randomUUID());
+        workflow.setTitle(dto.getTitle());
         workflow.setOwnerId(dto.getOwnerId());
         workflow.setStructure(dto.getStructure());
         workflow.setCreatedAt(LocalDateTime.now());
@@ -48,6 +49,7 @@ public class WorkflowService {
 
         existing.setStructure(dto.getStructure());
         existing.setOwnerId(dto.getOwnerId());
+        existing.setTitle(dto.getTitle());
         existing.setUpdatedAt(LocalDateTime.now());
 
         return toDto(repository.save(existing));
@@ -60,6 +62,7 @@ public class WorkflowService {
     private WorkflowResponseDto toDto(Workflow wf) {
         return new WorkflowResponseDto(
                 wf.getId(),
+                wf.getTitle(),
                 wf.getOwnerId(),
                 wf.getStructure(),
                 wf.getCreatedAt(),
