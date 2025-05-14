@@ -13,9 +13,9 @@ import java.net.http.HttpResponse;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import com.diploma.model.Node;
 
 @Service
 @NodeType("get_request")
@@ -28,17 +28,17 @@ public class GetRequestService implements NodeExecutor{
     }
 
     @Override
-    public Object execute(Map<String, Object> fields, List<String> inputs) {
+    public Object execute(Node node) {
         try {
-            String url = (String) fields.get("url");
+            String url = (String) node.getFields().get("url");
 
             @SuppressWarnings("unchecked")
-            Map<String, String> headers = (Map<String, String>) fields.getOrDefault("headers", Map.of());
+            Map<String, String> headers = (Map<String, String>) node.getFields().getOrDefault("headers", Map.of());
 
             @SuppressWarnings("unchecked")
-            Map<String, String> queryParams = (Map<String, String>) fields.getOrDefault("queryParams", Map.of());
+            Map<String, String> queryParams = (Map<String, String>) node.getFields().getOrDefault("queryParams", Map.of());
 
-            int timeoutMillis = (Integer) fields.get("timeout");
+            int timeoutMillis = (Integer) node.getFields().get("timeout");
 
             return sendGetRequest(url, headers, queryParams, timeoutMillis);
         } catch (Exception e) {

@@ -2,6 +2,7 @@ package com.diploma.service.DbToolsService;
 
 import org.springframework.stereotype.Service;
 
+import com.diploma.model.Node;
 import com.diploma.service.ResultService;
 import com.diploma.utils.DatabaseConnectionPoolService;
 import com.diploma.utils.NodeExecutor;
@@ -29,13 +30,13 @@ public class DatabaseQueryExecuterService implements NodeExecutor {
     }
 
     @Override
-    public Object execute(Map<String, Object> fields, List<String> inputs) {
-        if (inputs.isEmpty()) {
+    public Object execute(Node node) {
+        if (node.getInputs().isEmpty()) {
             throw new IllegalArgumentException("DB Query Executor требует хотя бы один input (nodeId)");
         }
 
         try {
-            UUID inputNodeId = UUID.fromString(inputs.get(0));
+            UUID inputNodeId = node.getInputs().get(0).getNodeId();
             List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
 
             if (data.isEmpty() || !data.get(0).containsKey("sessionId")) {
@@ -43,7 +44,7 @@ public class DatabaseQueryExecuterService implements NodeExecutor {
             }
 
             String sessionId = (String) data.get(0).get("sessionId");
-            String statementQuery = (String) fields.get("statementQuery");
+            String statementQuery = (String) node.getFields().get("statementQuery");
 
             if (statementQuery == null || statementQuery.isBlank()) {
                 throw new IllegalArgumentException("Поле 'statementQuery' не должно быть пустым");

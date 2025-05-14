@@ -1,10 +1,23 @@
 {
-    "workflowId": "21ea26e9-7b91-4af0-a7c0-4e38b7e473fd",
+    "workflowId": "4dae3789-fe20-4fea-a13f-eb9e6b8f7f98",
     "nodes": [
         {
             "node_id": "2f7ce3da-1851-4c8d-a6b3-cb7f9ab33c93",
+            "type": "db_connector",
+            "inputs": [],
+            "outputs": [],
+            "fields": {
+                "databaseType": "PostgreSQL",
+                "url": "jdbc:postgresql://localhost:5432/Quizlet",
+                "username": "postgres",
+                "password": "ibnrasalfakih12141522",
+                "driver": "org.postgresql.Driver"
+            }
+        }, 
+        {
+            "node_id": "4a49db1f-fb75-4ee3-b89d-c67cc3144c94",
             "type": "db_table_list",
-            "inputs": ["8ecbb084-a210-4409-a740-f363dd963b7a"],
+            "inputs": ["2f7ce3da-1851-4c8d-a6b3-cb7f9ab33c93"],
             "outputs": [],
             "fields": {
             }

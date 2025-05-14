@@ -3,6 +3,7 @@ package com.diploma.service.PreprocessService;
 import org.springframework.stereotype.Service;
 
 import com.diploma.dto.PreprocessDto.StringCleaningRequest;
+import com.diploma.model.Node;
 import com.diploma.service.ResultService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
@@ -20,20 +21,20 @@ public class StringCleaningService implements NodeExecutor {
     }
 
     @Override
-    public Object execute(Map<String, Object> fields, List<String> inputs) {
-        if (inputs.isEmpty()) {
+    public Object execute(Node node) {
+        if (node.getInputs().isEmpty()) {
             throw new IllegalArgumentException("Missing Data Processing требует хотя бы один input (nodeId)");
         }
 
-        UUID inputNodeId = UUID.fromString(inputs.get(0));
+        UUID inputNodeId = node.getInputs().get(0).getNodeId();
 
         List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
 
         StringCleaningRequest request = new StringCleaningRequest();
         request.setData(data);
-        request.setColumnActions((Map<String, List<String>>) fields.get("columnActions"));
-        request.setGlobalActions((List<String>) fields.get("globalActions"));
-        request.setCustomCharsToRemove((List<String>) fields.get("customCharsToRemove"));
+        request.setColumnActions((Map<String, List<String>>) node.getFields().get("columnActions"));
+        request.setGlobalActions((List<String>) node.getFields().get("globalActions"));
+        request.setCustomCharsToRemove((List<String>) node.getFields().get("customCharsToRemove"));
 
         List<Map<String, Object>> filtred = cleanStrings(request);
 

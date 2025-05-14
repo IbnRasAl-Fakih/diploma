@@ -1,5 +1,6 @@
 package com.diploma.service.HttpService;
 
+import com.diploma.model.Node;
 import com.diploma.service.ResultService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
@@ -28,22 +29,22 @@ public class DeleteRequestService implements NodeExecutor {
     }
 
     @Override
-    public Object execute(Map<String, Object> fields, List<String> inputs) {
+    public Object execute(Node node) {
 
-        if (inputs.isEmpty()) {
+        if (node.getInputs().isEmpty()) {
             throw new IllegalArgumentException("Delete Request требует хотя бы один input (nodeId)");
         }
 
         try {
-            UUID inputNodeId = UUID.fromString(inputs.get(0));
+            UUID inputNodeId = node.getInputs().get(0).getNodeId();
             List<Map<String, Object>> body = resultService.getDataFromNode(inputNodeId);
 
-            String url = (String) fields.get("url");
+            String url = (String) node.getFields().get("url");
 
             @SuppressWarnings("unchecked")
-            Map<String, String> headers = (Map<String, String>) fields.getOrDefault("headers", Map.of());
+            Map<String, String> headers = (Map<String, String>) node.getFields().getOrDefault("headers", Map.of());
 
-            int timeoutMillis = (Integer) fields.get("timeout");
+            int timeoutMillis = (Integer) node.getFields().get("timeout");
 
             return sendDeleteRequest(url, headers, body, timeoutMillis);
         } catch (Exception e) {

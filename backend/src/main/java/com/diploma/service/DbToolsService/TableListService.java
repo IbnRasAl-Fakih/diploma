@@ -2,6 +2,7 @@ package com.diploma.service.DbToolsService;
 
 import org.springframework.stereotype.Service;
 
+import com.diploma.model.Node;
 import com.diploma.service.ResultService;
 import com.diploma.utils.DatabaseConnectionPoolService;
 import com.diploma.utils.NodeExecutor;
@@ -28,13 +29,13 @@ public class TableListService implements NodeExecutor{
     }
 
     @Override
-    public Object execute(Map<String, Object> fields, List<String> inputs) {
-        if (inputs.isEmpty()) {
+    public Object execute(Node node) {
+        if (node.getInputs().isEmpty()) {
             throw new IllegalArgumentException("DB TableList требует хотя бы один input (nodeId)");
         }
 
         try {
-            UUID inputNodeId = UUID.fromString(inputs.get(0));
+            UUID inputNodeId = node.getInputs().get(0).getNodeId();
             List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
 
             if (data.isEmpty() || !data.get(0).containsKey("sessionId")) {

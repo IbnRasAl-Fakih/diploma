@@ -3,8 +3,11 @@ package com.diploma.service;
 import com.diploma.dto.ResultProcessorDto;
 import com.diploma.dto.WorkflowExecutorRequestDto;
 import com.diploma.utils.NodeExecutor;
+import com.diploma.utils.NodeMapper;
 import com.diploma.utils.NodeType;
 import com.diploma.utils.ResultProcessor;
+import com.diploma.utils.TopologicalSorter;
+import com.diploma.model.Node;
 
 import jakarta.annotation.PostConstruct;
 import org.reflections.Reflections;
@@ -50,26 +53,31 @@ public class WorkflowExecutorService {
         UUID workflowId = dto.getWorkflowId();
         List<Map<String, Object>> nodes = (List<Map<String, Object>>) dto.getNodes();
 
-        for (Map<String, Object> node : nodes) {
-            UUID nodeId = UUID.fromString(node.get("node_id").toString());
-            String type = (String) node.get("type");
+        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$/n"); // delete
+        System.out.println("Nodes before sorting: " + nodes);                      // delete
 
-            @SuppressWarnings("unchecked")
-            List<String> inputs = (List<String>) node.get("inputs");
+        List<Map<String, Object>> sortedNodes = TopologicalSorter.sort(nodes);
 
-            @SuppressWarnings("unchecked")
-            Map<String, Object> fields = (Map<String, Object>) node.get("fields");
+        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$/n"); // delete
+        System.out.println("Nodes after sorting: " + sortedNodes);                 // delete
 
-            NodeExecutor executor = executorRegistry.get(type);
+        List<Node> sortedMappedNodes = NodeMapper.mapToNodeList(sortedNodes);
+
+        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$/n"); // delete
+        System.out.println("Nodes after mapping: " + sortedMappedNodes);           // delete
+
+        for (Node node : sortedMappedNodes) {
+
+            NodeExecutor executor = executorRegistry.get(node.getType());
             if (executor == null) {
-                throw new IllegalArgumentException("❌ Unknown node type: " + type);
+                throw new IllegalArgumentException("❌ Unknown node type: " + node.getType());
             }
 
             try {
-                Object result = executor.execute(fields, inputs);
-                processor.putToDatabase(new ResultProcessorDto(nodeId, workflowId, result));
+                Object result = executor.execute(node);
+                processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), workflowId, result));
             } catch (Exception e) {
-                throw new RuntimeException("❌ Execution failed for node " + nodeId + ": " + e.getMessage(), e);
+                throw new RuntimeException("❌ Execution failed for node " + node.getNodeId() + ": " + e.getMessage(), e);
             }
         }
     }

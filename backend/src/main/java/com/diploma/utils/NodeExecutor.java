@@ -1,8 +1,7 @@
 package com.diploma.utils;
 
-import java.util.List;
-import java.util.Map;
+import com.diploma.model.Node;;
 
 public interface NodeExecutor {
-    Object execute(Map<String, Object> fields, List<String> inputs) throws Exception;
+    Object execute(Node node) throws Exception;
 }

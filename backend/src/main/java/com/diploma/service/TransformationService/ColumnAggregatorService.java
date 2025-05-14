@@ -1,6 +1,7 @@
 package com.diploma.service.TransformationService;
 
 import com.diploma.dto.TransformationDto.ColumnAggregatorRequest;
+import com.diploma.model.Node;
 import com.diploma.service.ResultService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
@@ -21,19 +22,19 @@ public class ColumnAggregatorService implements NodeExecutor {
     }
 
     @Override
-    public Object execute(Map<String, Object> fields, List<String> inputs) {
-        if (inputs.isEmpty()) {
+    public Object execute(Node node) {
+        if (node.getInputs().isEmpty()) {
             throw new IllegalArgumentException("ColumnAggregator требует хотя бы один input (nodeId)");
         }
 
-        UUID inputNodeId = UUID.fromString(inputs.get(0));
+        UUID inputNodeId = node.getInputs().get(0).getNodeId();
         List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
 
         ColumnAggregatorRequest request = new ColumnAggregatorRequest();
         request.setData(data);
-        request.setFunction((String) fields.get("function"));
-        request.setColumns((List<String>) fields.get("columns"));
-        request.setOutputColumnName((String) fields.get("outputColumnName"));
+        request.setFunction((String) node.getFields().get("function"));
+        request.setColumns((List<String>) node.getFields().get("columns"));
+        request.setOutputColumnName((String) node.getFields().get("outputColumnName"));
 
         List<Map<String, Object>> aggregated = aggregateColumns(request);
 

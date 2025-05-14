@@ -1,6 +1,8 @@
 package com.diploma.service.PreprocessService;
 
 import org.springframework.stereotype.Service;
+
+import com.diploma.model.Node;
 import com.diploma.service.ResultService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
@@ -19,17 +21,17 @@ public class DuplicateRemoverService implements NodeExecutor {
     }
 
     @Override
-    public Object execute(Map<String, Object> fields, List<String> inputs) {
-        if (inputs.isEmpty()) {
+    public Object execute(Node node) {
+        if (node.getInputs().isEmpty()) {
             throw new IllegalArgumentException("Duplicate Remover требует хотя бы один input (nodeId)");
         }
 
-        UUID inputNodeId = UUID.fromString(inputs.get(0));
+        UUID inputNodeId = node.getInputs().get(0).getNodeId();
 
         List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
 
         @SuppressWarnings("unchecked")
-        List<String> selectedColumns = (List<String>) fields.getOrDefault("selectedColumns", List.of());
+        List<String> selectedColumns = (List<String>) node.getFields().getOrDefault("selectedColumns", List.of());
 
         List<Map<String, Object>> cleanData = removeDuplicates(data, selectedColumns);
 

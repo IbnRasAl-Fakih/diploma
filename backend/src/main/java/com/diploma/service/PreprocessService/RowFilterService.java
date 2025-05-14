@@ -2,6 +2,7 @@ package com.diploma.service.PreprocessService;
 
 import com.diploma.dto.PreprocessDto.MissingValuesRequest;
 import com.diploma.dto.PreprocessDto.RowFilterRequest;
+import com.diploma.model.Node;
 import com.diploma.service.ResultService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
@@ -25,31 +26,28 @@ public class RowFilterService implements NodeExecutor {
         this.resultService = resultService;
     }
 
-@Override
-public Object execute(Map<String, Object> fields, List<String> inputs) {
-    if (inputs.isEmpty()) {
-        throw new IllegalArgumentException("Missing Data Processing требует хотя бы один input (nodeId)");
+    @Override
+    public Object execute(Node node) {
+        if (node.getInputs().isEmpty()) {
+            throw new IllegalArgumentException("RowFilter требует хотя бы один input (nodeId)");
+        }
+
+        UUID inputNodeId = node.getInputs().get(0).getNodeId();
+
+        List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
+
+        RowFilterRequest request = new RowFilterRequest();
+        request.setData(data);
+        request.setColumn((String) node.getFields().get("column"));
+        request.setOperator((String) node.getFields().get("operator"));
+        request.setValue((String) node.getFields().get("value"));
+        request.setCaseSensitive((Boolean) node.getFields().get("caseSensitive"));
+        request.setExcludeMatches((Boolean) node.getFields().get("excludeMatches"));
+
+        List<Map<String, Object>> filtred = filterRows(request);
+
+        return Map.of("filtred", filtred);
     }
-
-
-    UUID inputNodeId = UUID.fromString(inputs.get(0));
-
-    List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
-
-    RowFilterRequest request = new RowFilterRequest();
-    request.setData(data);
-    request.setColumn((String) fields.get("column"));
-    request.setOperator((String) fields.get("operator"));
-    request.setValue((String) fields.get("value"));
-    request.setCaseSensitive((Boolean) fields.get("caseSensitive"));
-    request.setExcludeMatches((Boolean) fields.get("excludeMatches"));
-
-
-    List<Map<String, Object>> filtred = filterRows(request);
-
-    return Map.of("filtred", filtred);
-}
-
 
     public List<Map<String, Object>> filterRows(RowFilterRequest req) {
         Predicate<Map<String, Object>> predicate = row -> {

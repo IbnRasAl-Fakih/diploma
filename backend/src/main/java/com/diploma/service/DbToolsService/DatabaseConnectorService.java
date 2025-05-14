@@ -2,6 +2,7 @@ package com.diploma.service.DbToolsService;
 
 import org.springframework.stereotype.Service;
 
+import com.diploma.model.Node;
 import com.diploma.utils.DatabaseConnectionPoolService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
@@ -23,12 +24,12 @@ public class DatabaseConnectorService implements NodeExecutor{
     }
 
     @Override
-    public Object execute(Map<String, Object> fields, List<String> inputs) {
+    public Object execute(Node node) {
         try {
-            String url = (String) fields.get("url");
-            String username = (String) fields.get("username");
-            String password = (String) fields.get("password");
-            String driver = (String) fields.get("driver");
+            String url = (String) node.getFields().get("url");
+            String username = (String) node.getFields().get("username");
+            String password = (String) node.getFields().get("password");
+            String driver = (String) node.getFields().get("driver");
 
             return connect(url, username, password, driver);
         } catch (Exception e) {

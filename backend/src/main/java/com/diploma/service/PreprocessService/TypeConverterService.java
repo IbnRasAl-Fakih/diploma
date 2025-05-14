@@ -3,6 +3,7 @@ package com.diploma.service.PreprocessService;
 import org.springframework.stereotype.Service;
 
 import com.diploma.dto.PreprocessDto.TypeConverterRequest;
+import com.diploma.model.Node;
 import com.diploma.service.ResultService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
@@ -25,28 +26,28 @@ public class TypeConverterService implements NodeExecutor {
     }
     
     @Override
-    public Object execute(Map<String, Object> fields, List<String> inputs) {
-        if (inputs.isEmpty()) {
+    public Object execute(Node node) {
+        if (node.getInputs().isEmpty()) {
             throw new IllegalArgumentException("TypeConverter требует хотя бы один input (nodeId)");
         }
 
-        UUID inputNodeId = UUID.fromString(inputs.get(0));
+        UUID inputNodeId = node.getInputs().get(0).getNodeId();
         List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
 
         TypeConverterRequest request = new TypeConverterRequest();
         request.setData(data);
-        request.setColumnTypes((Map<String, String>) fields.get("columnTypes"));
+        request.setColumnTypes((Map<String, String>) node.getFields().get("columnTypes"));
 
         List<Map<String, Object>> converted = convertTypes(request);
 
         return Map.of("Converted", converted);
     }
 
-private static final List<DateTimeFormatter> dateFormats = List.of(
-        DateTimeFormatter.ofPattern("dd.MM.yyyy"),
-        DateTimeFormatter.ofPattern("yyyy-MM-dd"),
-        DateTimeFormatter.ofPattern("MM/dd/yyyy")
-);
+    private static final List<DateTimeFormatter> dateFormats = List.of(
+            DateTimeFormatter.ofPattern("dd.MM.yyyy"),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+            DateTimeFormatter.ofPattern("MM/dd/yyyy")
+    );
 
     public List<Map<String, Object>> convertTypes(TypeConverterRequest request) {
         List<Map<String, Object>> data = request.getData();

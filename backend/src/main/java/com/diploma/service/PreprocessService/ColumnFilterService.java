@@ -1,8 +1,8 @@
 package com.diploma.service.PreprocessService;
 
-
 import org.springframework.stereotype.Service;
 
+import com.diploma.model.Node;
 import com.diploma.service.ResultService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
@@ -21,17 +21,17 @@ public class ColumnFilterService implements NodeExecutor {
     }
 
     @Override
-    public Object execute(Map<String, Object> fields, List<String> inputs) {
-        if (inputs.isEmpty()) {
+    public Object execute(Node node) {
+        if (node.getInputs().isEmpty()) {
             throw new IllegalArgumentException("ColumnFilter требует хотя бы один input (nodeId)");
         }
 
-        UUID inputNodeId = UUID.fromString(inputs.get(0));
+        UUID inputNodeId = node.getInputs().get(0).getNodeId();
 
         List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
 
         @SuppressWarnings("unchecked")
-        List<String> columnsToRemove = (List<String>) fields.getOrDefault("columnsToRemove", List.of());
+        List<String> columnsToRemove = (List<String>) node.getFields().getOrDefault("columnsToRemove", List.of());
 
         List<Map<String, Object>> filtered = removeColumns(data, new HashSet<>(columnsToRemove));
 

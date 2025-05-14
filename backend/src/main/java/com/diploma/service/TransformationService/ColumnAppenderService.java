@@ -1,6 +1,7 @@
 package com.diploma.service.TransformationService;
 
 import com.diploma.dto.TransformationDto.ColumnAppenderRequest;
+import com.diploma.model.Node;
 import com.diploma.service.ResultService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
@@ -20,13 +21,13 @@ public class ColumnAppenderService implements NodeExecutor {
     }
 
     @Override
-    public Object execute(Map<String, Object> fields, List<String> inputs) {
-        if (inputs.isEmpty()) {
+    public Object execute(Node node) {
+        if (node.getInputs().isEmpty()) {
             throw new IllegalArgumentException("Duplicate Remover требует хотя бы один input (nodeId)");
         }
 
-        UUID inputNodeId = UUID.fromString(inputs.get(0));
-        UUID inputNodeId2 = UUID.fromString(inputs.get(1));
+        UUID inputNodeId = node.getInputs().get(0).getNodeId();
+        UUID inputNodeId2 = node.getInputs().get(1).getNodeId();
 
         List<Map<String, Object>> data1 = resultService.getDataFromNode(inputNodeId);
         List<Map<String, Object>> data2 = resultService.getDataFromNode(inputNodeId2);
