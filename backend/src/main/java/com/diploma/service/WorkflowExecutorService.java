@@ -6,8 +6,10 @@ import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeMapper;
 import com.diploma.utils.NodeType;
 import com.diploma.utils.ResultProcessor;
+import com.diploma.utils.SessionService;
 import com.diploma.utils.TopologicalSorter;
 import com.diploma.model.Node;
+import com.diploma.model.Session;
 
 import jakarta.annotation.PostConstruct;
 import org.reflections.Reflections;
@@ -22,10 +24,12 @@ public class WorkflowExecutorService {
     private final Map<String, NodeExecutor> executorRegistry = new HashMap<>();
     private final ResultProcessor processor;
     private final ApplicationContext context;
+    private final SessionService service;
 
-    public WorkflowExecutorService(ResultProcessor processor, ApplicationContext context) {
+    public WorkflowExecutorService(ResultProcessor processor, ApplicationContext context, SessionService service) {
         this.processor = processor;
         this.context = context;
+        this.service = service;
     }
 
     @PostConstruct
@@ -49,7 +53,7 @@ public class WorkflowExecutorService {
         }
     }
 
-    public void executeWorkflow(WorkflowExecutorRequestDto dto) {
+    public void executeWorkflow(WorkflowExecutorRequestDto dto) throws Exception {
         UUID workflowId = dto.getWorkflowId();
         List<Map<String, Object>> nodes = (List<Map<String, Object>>) dto.getNodes();
 
@@ -74,8 +78,24 @@ public class WorkflowExecutorService {
             }
 
             try {
-                Object result = executor.execute(node);
-                processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), workflowId, result));
+                if ("db_connector".equals(node.getType())) {
+                    String url = (String) node.getFields().get("url");
+
+                    System.out.println("url: " + url);
+
+                    if (service.doesSessionExist(workflowId, url)) {
+                        Session session = service.getByWorkflowIdAndUrl(workflowId, url);
+                        processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), workflowId, Map.of("sessionId", session.getSessionId())));
+                        service.addSession(workflowId, node.getNodeId(), session.getSessionId(), url);
+                    } else {
+                        Object result = executor.execute(node);
+                        processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), workflowId, result));
+                        service.addSession(workflowId, node.getNodeId(), UUID.fromString((String) ((Map<?, ?>) result).get("sessionId")), url);
+                    }
+                } else {
+                    Object result = executor.execute(node);
+                    processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), workflowId, result));
+                }
             } catch (Exception e) {
                 throw new RuntimeException("❌ Execution failed for node " + node.getNodeId() + ": " + e.getMessage(), e);
             }

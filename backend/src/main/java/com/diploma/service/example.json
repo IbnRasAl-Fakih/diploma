@@ -1,5 +1,5 @@
 {
-    "workflowId": "4dae3789-fe20-4fea-a13f-eb9e6b8f7f98",
+    "workflowId": "2f98640a-ef73-487a-a066-c8b544e81409",
     "nodes": [
         {
             "node_id": "2f7ce3da-1851-4c8d-a6b3-cb7f9ab33c93",
@@ -8,9 +8,9 @@
             "outputs": [],
             "fields": {
                 "databaseType": "PostgreSQL",
-                "url": "jdbc:postgresql://localhost:5432/Quizlet",
+                "url": "jdbc:postgresql://localhost:5432/airtable",
                 "username": "postgres",
-                "password": "ibnrasalfakih12141522",
+                "password": "qwerty123",
                 "driver": "org.postgresql.Driver"
             }
         }, 
@@ -20,6 +20,19 @@
             "inputs": ["2f7ce3da-1851-4c8d-a6b3-cb7f9ab33c93"],
             "outputs": [],
             "fields": {
+            }
+        },
+        {
+            "node_id": "a922dd32-3d18-411f-aab6-902619e4ab2f",
+            "type": "db_connector",
+            "inputs": [],
+            "outputs": [],
+            "fields": {
+                "databaseType": "PostgreSQL",
+                "url": "jdbc:postgresql://localhost:5432/airtable",
+                "username": "postgres",
+                "password": "qwerty123",
+                "driver": "org.postgresql.Driver"
             }
         }
 	]

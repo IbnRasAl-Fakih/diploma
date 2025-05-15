@@ -25,6 +25,7 @@ public class SessionService {
     }
 
     public Session addSession(UUID workflowId, UUID nodeId, UUID sessionId, String url) {
+        System.out.println("--------------------Hello from addSession()-----------------------------");
         try {
             Session session = Session.builder()
                     .workflowId(workflowId)

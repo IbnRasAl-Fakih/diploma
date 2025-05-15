@@ -9,7 +9,6 @@ import com.diploma.utils.NodeType;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -24,7 +23,7 @@ public class DatabaseConnectorService implements NodeExecutor{
     }
 
     @Override
-    public Object execute(Node node) {
+    public Object execute(Node node) throws Exception {
         try {
             String url = (String) node.getFields().get("url");
             String username = (String) node.getFields().get("username");
@@ -33,9 +32,8 @@ public class DatabaseConnectorService implements NodeExecutor{
 
             return connect(url, username, password, driver);
         } catch (Exception e) {
-            System.err.println("Error in execute(): " + e.getMessage());
-            e.printStackTrace();
-            return Map.of("error", e.getMessage());
+            System.err.println("Error in execute(): " + e);
+            throw new Exception("❌ DB Connector error " + e.getMessage());
         }
     }
 
