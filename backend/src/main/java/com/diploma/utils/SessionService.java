@@ -1,5 +1,6 @@
 package com.diploma.utils;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.diploma.model.Session;
@@ -24,8 +25,11 @@ public class SessionService {
         return repository.findByWorkflowIdAndUrl(workflowId, url);
     }
 
+    public List<Session> getByWorkflowId(UUID workflowid) {
+        return repository.findByWorkflowId(workflowid);
+    }
+
     public Session addSession(UUID workflowId, UUID nodeId, UUID sessionId, String url) {
-        System.out.println("--------------------Hello from addSession()-----------------------------");
         try {
             Session session = Session.builder()
                     .workflowId(workflowId)
@@ -40,5 +44,9 @@ public class SessionService {
         } catch (Exception e) {
             throw new RuntimeException("Не удалось добавить сессию: " + e.getMessage(), e);
         }
+    }
+
+    public void deleteByWorkflowId(UUID workflowId) {
+        repository.deleteByWorkflowId(workflowId);
     }
 }

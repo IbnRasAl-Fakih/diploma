@@ -19,14 +19,14 @@ public class DatabaseConnectionPoolService {
         return connectionPool.get(sessionId);
     }
 
-    public void removeConnection(String sessionId) {
+    public void removeConnection(String sessionId) throws Exception {
         Connection connection = connectionPool.remove(sessionId);
         if (connection != null) {
             try {
                 connection.close();
                 System.out.println("✅ Соединение закрыто для сессии: " + sessionId);
             } catch (Exception e) {
-                System.err.println("❌ Ошибка при закрытии соединения: " + e.getMessage());
+                throw new Exception("❌ Ошибка при закрытии соединения: " + e.getMessage());
             }
         }
     }

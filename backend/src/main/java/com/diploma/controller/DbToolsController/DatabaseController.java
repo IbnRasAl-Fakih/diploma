@@ -37,7 +37,7 @@ public class DatabaseController {
     }
 
     @PostMapping("/disconnect")
-    public ResponseEntity<String> disconnect(@RequestParam String sessionId) {
+    public ResponseEntity<String> disconnect(@RequestParam String sessionId) throws Exception {
         if (connectionPoolService.hasConnection(sessionId)) {
             connectionPoolService.removeConnection(sessionId);
             return ResponseEntity.ok("✅ Соединение успешно закрыто для сессии: " + sessionId);

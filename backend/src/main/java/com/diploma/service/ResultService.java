@@ -85,6 +85,10 @@ public class ResultService {
         resultRepository.deleteById(nodeId);
     }
 
+    public void deleteByWorkflowId(UUID workflowId) {
+        resultRepository.deleteByWorkflowId(workflowId);
+    }
+
     public List<Map<String, Object>> getDataFromNode(UUID nodeId) {
         return getById(nodeId, 0, Integer.MAX_VALUE)
                 .map(dto -> {
