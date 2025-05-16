@@ -24,15 +24,11 @@
         },
         {
             "node_id": "a922dd32-3d18-411f-aab6-902619e4ab2f",
-            "type": "db_connector",
-            "inputs": [],
+            "type": "db_query_executor",
+            "inputs": ["4a49db1f-fb75-4ee3-b89d-c67cc3144c94"],
             "outputs": [],
             "fields": {
-                "databaseType": "PostgreSQL",
-                "url": "jdbc:postgresql://localhost:5432/airtable",
-                "username": "postgres",
-                "password": "qwerty123",
-                "driver": "org.postgresql.Driver"
+                "statementQuery": "select * from funnel"
             }
         }
 	]

@@ -29,6 +29,10 @@ public class SessionService {
         return repository.findByWorkflowId(workflowid);
     }
 
+    public Session getByNodeId(UUID nodeId) {
+        return repository.findByNodeId(nodeId);
+    }
+
     public Session addSession(UUID workflowId, UUID nodeId, UUID sessionId, String url) {
         try {
             Session session = Session.builder()

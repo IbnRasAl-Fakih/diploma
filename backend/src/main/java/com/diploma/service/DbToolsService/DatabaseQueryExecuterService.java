@@ -3,10 +3,10 @@ package com.diploma.service.DbToolsService;
 import org.springframework.stereotype.Service;
 
 import com.diploma.model.Node;
-import com.diploma.service.ResultService;
 import com.diploma.utils.DatabaseConnectionPoolService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
+import com.diploma.utils.FindDbConnectorNodeService;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -22,11 +22,11 @@ import java.util.UUID;
 public class DatabaseQueryExecuterService implements NodeExecutor {
 
     private final DatabaseConnectionPoolService connectionPoolService;
-    private final ResultService resultService;
+    private final FindDbConnectorNodeService findDbConnectorNodeService;
 
-    public DatabaseQueryExecuterService(DatabaseConnectionPoolService connectionPoolService, ResultService resultService) {
+    public DatabaseQueryExecuterService(DatabaseConnectionPoolService connectionPoolService, FindDbConnectorNodeService findDbConnectorNodeService) {
         this.connectionPoolService = connectionPoolService;
-        this.resultService = resultService;
+        this.findDbConnectorNodeService = findDbConnectorNodeService;
     }
 
     @Override
@@ -36,21 +36,14 @@ public class DatabaseQueryExecuterService implements NodeExecutor {
         }
 
         try {
-            UUID inputNodeId = node.getInputs().get(0).getNodeId();
-            List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
-
-            if (data.isEmpty() || !data.get(0).containsKey("sessionId")) {
-                throw new IllegalStateException("Данные по nodeId отсутствуют или sessionId не найден");
-            }
-
-            String sessionId = (String) data.get(0).get("sessionId");
+            UUID sessionId = findDbConnectorNodeService.findDbConnectorNodeId(node);
             String statementQuery = (String) node.getFields().get("statementQuery");
 
             if (statementQuery == null || statementQuery.isBlank()) {
                 throw new IllegalArgumentException("Поле 'statementQuery' не должно быть пустым");
             }
 
-            List<Map<String, Object>> result = executeQuery(sessionId, statementQuery);
+            List<Map<String, Object>> result = executeQuery(sessionId.toString(), statementQuery);
             return Map.of("result", result);
 
         } catch (Exception e) {

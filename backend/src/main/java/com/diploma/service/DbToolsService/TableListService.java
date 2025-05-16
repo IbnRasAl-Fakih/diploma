@@ -3,8 +3,8 @@ package com.diploma.service.DbToolsService;
 import org.springframework.stereotype.Service;
 
 import com.diploma.model.Node;
-import com.diploma.service.ResultService;
 import com.diploma.utils.DatabaseConnectionPoolService;
+import com.diploma.utils.FindDbConnectorNodeService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
 
@@ -21,11 +21,11 @@ import java.util.UUID;
 public class TableListService implements NodeExecutor{
 
     private final DatabaseConnectionPoolService connectionPoolService;
-    private final ResultService resultService;
+    private final FindDbConnectorNodeService findDbConnectorNodeService;
 
-    public TableListService(DatabaseConnectionPoolService connectionPoolService, ResultService resultService) {
+    public TableListService(DatabaseConnectionPoolService connectionPoolService, FindDbConnectorNodeService findDbConnectorNodeService) {
         this.connectionPoolService = connectionPoolService;
-        this.resultService = resultService;
+        this.findDbConnectorNodeService = findDbConnectorNodeService;
     }
 
     @Override
@@ -35,16 +35,9 @@ public class TableListService implements NodeExecutor{
         }
 
         try {
-            UUID inputNodeId = node.getInputs().get(0).getNodeId();
-            List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
+            UUID sessionId = findDbConnectorNodeService.findDbConnectorNodeId(node);
 
-            if (data.isEmpty() || !data.get(0).containsKey("sessionId")) {
-                throw new IllegalStateException("Данные по nodeId отсутствуют или sessionId не найден");
-            }
-
-            String sessionId = (String) data.get(0).get("sessionId");
-
-            List<String> result = listTables(sessionId);
+            List<String> result = listTables(sessionId.toString());
             return Map.of("result", result);
 
         } catch (Exception e) {

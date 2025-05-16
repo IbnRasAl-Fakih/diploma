@@ -5,14 +5,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface SessionRepository extends JpaRepository<Session, UUID> {
 
     List<Session> findByWorkflowId(UUID workflowId);
 
-    Optional<Session> findByNodeId(UUID nodeId);
+    Session findByNodeId(UUID nodeId);
 
     Session findByWorkflowIdAndUrl(UUID workflowId, String url);
 
