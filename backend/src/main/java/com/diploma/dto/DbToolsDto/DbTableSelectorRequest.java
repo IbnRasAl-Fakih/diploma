@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class DatabaseQueryRequest {
+public class DbTableSelectorRequest {
     private String sessionId;
-    private String statement;
+    private String tableName;
 }

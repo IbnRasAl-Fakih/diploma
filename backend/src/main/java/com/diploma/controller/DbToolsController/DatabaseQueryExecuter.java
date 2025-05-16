@@ -1,6 +1,6 @@
 package com.diploma.controller.DbToolsController;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.diploma.dto.DbToolsDto.DatabaseQueryRequest;
 import com.diploma.service.DbToolsService.DatabaseQueryExecuterService;
 import com.diploma.utils.DatabaseConnectionPoolService;
 
@@ -23,16 +23,14 @@ public class DatabaseQueryExecuter {
     }
 
     @PostMapping("/execute")
-    public ResponseEntity<?> executeQuery(
-            @RequestParam String sessionId,
-            @RequestBody String sql) {
+    public ResponseEntity<?> executeQuery(@RequestBody DatabaseQueryRequest request) {
 
-        if (!connectionPoolService.hasConnection(sessionId)) {
-            return ResponseEntity.status(404).body("❌ Сессия не найдена: " + sessionId);
+        if (!connectionPoolService.hasConnection(request.getSessionId())) {
+            return ResponseEntity.status(404).body("❌ Сессия не найдена: " + request.getSessionId());
         }
 
         try {
-            List<Map<String, Object>> result = databaseQueryExecuterService.executeQuery(sessionId, sql);
+            List<Map<String, Object>> result = databaseQueryExecuterService.executeQuery(request.getSessionId(), request.getStatement());
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("❌ Ошибка выполнения запроса: " + e.getMessage());

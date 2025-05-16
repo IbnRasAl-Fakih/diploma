@@ -1,12 +1,12 @@
 package com.diploma.service.DbToolsService;
 
-import org.springframework.stereotype.Service;
-
 import com.diploma.model.Node;
 import com.diploma.utils.DatabaseConnectionPoolService;
 import com.diploma.utils.FindDbConnectorNodeService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
+
+import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -17,13 +17,13 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
-@NodeType("db_table_list")
-public class TableListService implements NodeExecutor {
+@NodeType("db_table_selector")
+public class DbTableSelectorService implements NodeExecutor {
 
     private final DatabaseConnectionPoolService connectionPoolService;
     private final FindDbConnectorNodeService findDbConnectorNodeService;
 
-    public TableListService(DatabaseConnectionPoolService connectionPoolService, FindDbConnectorNodeService findDbConnectorNodeService) {
+    public DbTableSelectorService(DatabaseConnectionPoolService connectionPoolService, FindDbConnectorNodeService findDbConnectorNodeService) {
         this.connectionPoolService = connectionPoolService;
         this.findDbConnectorNodeService = findDbConnectorNodeService;
     }
@@ -31,13 +31,15 @@ public class TableListService implements NodeExecutor {
     @Override
     public Object execute(Node node) {
         if (node.getInputs().isEmpty()) {
-            throw new IllegalArgumentException("DB TableList требует хотя бы один input (nodeId)");
+            throw new IllegalArgumentException("DB Table Selector требует хотя бы один input (nodeId)");
         }
 
         try {
             UUID sessionId = findDbConnectorNodeService.findDbConnectorNodeId(node);
+            String tableName = (String) node.getFields().get("tableName");
+            String schemeName = (String) node.getFields().get("schemeName");
 
-            List<String> result = listTables(sessionId.toString());
+            List<Map<String, String>> result = getTableColumns(sessionId.toString(), tableName);
             return Map.of("result", result);
 
         } catch (Exception e) {
@@ -45,20 +47,23 @@ public class TableListService implements NodeExecutor {
         }
     }
 
-    public List<String> listTables(String sessionId) throws Exception {
+    public List<Map<String, String>> getTableColumns(String sessionId, String tableName) throws Exception {
         Connection connection = connectionPoolService.getConnection(sessionId);
         if (connection == null) {
-            throw new IllegalArgumentException("Session not found: " + sessionId);
+            throw new IllegalArgumentException("Invalid sessionId or connection not found");
         }
 
-        List<String> tables = new ArrayList<>();
         DatabaseMetaData metaData = connection.getMetaData();
 
-        try (ResultSet rs = metaData.getTables(null, null, "%", new String[]{"TABLE"})) {
+        List<Map<String, String>> columns = new ArrayList<>();
+        try (ResultSet rs = metaData.getColumns(null, null, tableName, null)) {
             while (rs.next()) {
-                tables.add(rs.getString("TABLE_NAME"));
+                String columnName = rs.getString("COLUMN_NAME");
+                String dataType = rs.getString("TYPE_NAME");
+                columns.add(Map.of("columnName", columnName, "dataType", dataType));
             }
         }
-        return tables;
+
+        return columns;
     }
 }
