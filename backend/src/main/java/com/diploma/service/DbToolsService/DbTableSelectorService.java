@@ -2,9 +2,10 @@ package com.diploma.service.DbToolsService;
 
 import com.diploma.model.Node;
 import com.diploma.utils.DatabaseConnectionPoolService;
-import com.diploma.utils.FindDbConnectorNodeService;
+import com.diploma.utils.FindNodeService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
+import com.diploma.utils.SessionService;
 
 import org.springframework.stereotype.Service;
 
@@ -21,29 +22,31 @@ import java.util.UUID;
 public class DbTableSelectorService implements NodeExecutor {
 
     private final DatabaseConnectionPoolService connectionPoolService;
-    private final FindDbConnectorNodeService findDbConnectorNodeService;
+    private final FindNodeService findNodeService;
+    private final SessionService sessionService;
 
-    public DbTableSelectorService(DatabaseConnectionPoolService connectionPoolService, FindDbConnectorNodeService findDbConnectorNodeService) {
+    public DbTableSelectorService(DatabaseConnectionPoolService connectionPoolService, FindNodeService findNodeService, SessionService sessionService) {
         this.connectionPoolService = connectionPoolService;
-        this.findDbConnectorNodeService = findDbConnectorNodeService;
+        this.findNodeService = findNodeService;
+        this.sessionService = sessionService;
     }
 
     @Override
-    public Object execute(Node node) {
+    public Object execute(Node node) throws Exception {
         if (node.getInputs().isEmpty()) {
             throw new IllegalArgumentException("DB Table Selector требует хотя бы один input (nodeId)");
         }
 
         try {
-            UUID sessionId = findDbConnectorNodeService.findDbConnectorNodeId(node);
+            Node dataContainsNode = findNodeService.findNode(node, "db_connector");
+            UUID sessionId = sessionService.getByNodeId(dataContainsNode.getNodeId()).getSessionId();
             String tableName = (String) node.getFields().get("tableName");
-            String schemeName = (String) node.getFields().get("schemeName");
 
             List<Map<String, String>> result = getTableColumns(sessionId.toString(), tableName);
             return Map.of("result", result);
 
         } catch (Exception e) {
-            return Map.of("message", "Error" + e.getMessage());
+            throw new Exception("Ошибка при выполнении execute() DB Table Selector" + e.getMessage());
         }
     }
 
@@ -62,6 +65,8 @@ public class DbTableSelectorService implements NodeExecutor {
                 String dataType = rs.getString("TYPE_NAME");
                 columns.add(Map.of("columnName", columnName, "dataType", dataType));
             }
+        } catch (Exception e) {
+            throw new Exception("Ошибка при выполнении DB Table Selector: " + e.getMessage());
         }
 
         return columns;

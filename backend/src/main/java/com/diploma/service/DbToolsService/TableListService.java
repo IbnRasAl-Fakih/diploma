@@ -4,9 +4,10 @@ import org.springframework.stereotype.Service;
 
 import com.diploma.model.Node;
 import com.diploma.utils.DatabaseConnectionPoolService;
-import com.diploma.utils.FindDbConnectorNodeService;
+import com.diploma.utils.FindNodeService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
+import com.diploma.utils.SessionService;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -21,27 +22,30 @@ import java.util.UUID;
 public class TableListService implements NodeExecutor {
 
     private final DatabaseConnectionPoolService connectionPoolService;
-    private final FindDbConnectorNodeService findDbConnectorNodeService;
+    private final FindNodeService findNodeService;
+    private final SessionService sessionService;
 
-    public TableListService(DatabaseConnectionPoolService connectionPoolService, FindDbConnectorNodeService findDbConnectorNodeService) {
+    public TableListService(DatabaseConnectionPoolService connectionPoolService, FindNodeService findNodeService, SessionService sessionService) {
         this.connectionPoolService = connectionPoolService;
-        this.findDbConnectorNodeService = findDbConnectorNodeService;
+        this.findNodeService = findNodeService;
+        this.sessionService = sessionService;
     }
 
     @Override
-    public Object execute(Node node) {
+    public Object execute(Node node) throws Exception {
         if (node.getInputs().isEmpty()) {
             throw new IllegalArgumentException("DB TableList требует хотя бы один input (nodeId)");
         }
 
         try {
-            UUID sessionId = findDbConnectorNodeService.findDbConnectorNodeId(node);
+            Node dataContainsNode = findNodeService.findNode(node, "db_connector");
+            UUID sessionId = sessionService.getByNodeId(dataContainsNode.getNodeId()).getSessionId();
 
             List<String> result = listTables(sessionId.toString());
             return Map.of("result", result);
 
         } catch (Exception e) {
-            return Map.of("message", "Error" + e.getMessage());
+            throw new Exception("Ошибка при выполнении execute() DB Table List: " + e.getMessage());
         }
     }
 
@@ -58,7 +62,10 @@ public class TableListService implements NodeExecutor {
             while (rs.next()) {
                 tables.add(rs.getString("TABLE_NAME"));
             }
+        } catch (Exception e) {
+            throw new Exception("Ошибка при выполнении DB Table List: " + e.getMessage());
         }
+
         return tables;
     }
 }

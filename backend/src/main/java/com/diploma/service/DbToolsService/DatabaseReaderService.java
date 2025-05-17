@@ -3,10 +3,12 @@ package com.diploma.service.DbToolsService;
 import org.springframework.stereotype.Service;
 
 import com.diploma.model.Node;
+import com.diploma.service.ResultService;
 import com.diploma.utils.DatabaseConnectionPoolService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
-import com.diploma.utils.FindDbConnectorNodeService;
+import com.diploma.utils.SessionService;
+import com.diploma.utils.FindNodeService;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -19,25 +21,32 @@ import java.util.UUID;
 
 @Service
 @NodeType("db_query_executor")
-public class DatabaseQueryExecuterService implements NodeExecutor {
+public class DatabaseReaderService implements NodeExecutor {
 
     private final DatabaseConnectionPoolService connectionPoolService;
-    private final FindDbConnectorNodeService findDbConnectorNodeService;
+    private final FindNodeService findNodeService;
+    private final SessionService sessionService;
+    private final ResultService resultService;
 
-    public DatabaseQueryExecuterService(DatabaseConnectionPoolService connectionPoolService, FindDbConnectorNodeService findDbConnectorNodeService) {
+    public DatabaseReaderService(DatabaseConnectionPoolService connectionPoolService, FindNodeService findNodeService, SessionService sessionService, ResultService resultService) {
         this.connectionPoolService = connectionPoolService;
-        this.findDbConnectorNodeService = findDbConnectorNodeService;
+        this.findNodeService = findNodeService;
+        this.sessionService = sessionService;
+        this.resultService = resultService;
     }
 
     @Override
-    public Object execute(Node node) {
+    public Object execute(Node node) throws Exception {
         if (node.getInputs().isEmpty()) {
-            throw new IllegalArgumentException("DB Query Executor требует хотя бы один input (nodeId)");
+            throw new IllegalArgumentException("DB Reader требует хотя бы один input (nodeId)");
         }
 
         try {
-            UUID sessionId = findDbConnectorNodeService.findDbConnectorNodeId(node);
-            String statementQuery = (String) node.getFields().get("statementQuery");
+            Node dataContainsNode = findNodeService.findNode(node, "db_connector");
+            UUID sessionId = sessionService.getByNodeId(dataContainsNode.getNodeId()).getSessionId();
+
+            List<Map<String, Object>> data = resultService.getDataFromNode(node.getInputs().get(0).getNodeId());
+            String statementQuery = data.get(0).get("sqlCommand").toString();
 
             if (statementQuery == null || statementQuery.isBlank()) {
                 throw new IllegalArgumentException("Поле 'statementQuery' не должно быть пустым");
@@ -47,7 +56,7 @@ public class DatabaseQueryExecuterService implements NodeExecutor {
             return Map.of("result", result);
 
         } catch (Exception e) {
-            return Map.of("message", "Ошибка при выполнении DB запроса: " + e.getMessage());
+            throw new Exception("Ошибка при выполнении execute() DB Query Reader: " + e.getMessage());
         }
     }
 
@@ -62,6 +71,7 @@ public class DatabaseQueryExecuterService implements NodeExecutor {
             boolean hasResultSet = statement.execute(statementQuery);
 
             if (hasResultSet) {
+                System.out.println("Hello from if");
                 resultSet = statement.getResultSet();
                 int columnCount = resultSet.getMetaData().getColumnCount();
 
@@ -82,7 +92,8 @@ public class DatabaseQueryExecuterService implements NodeExecutor {
 
             return new ArrayList<>();
         } catch (Exception e) {
-            throw new Exception("Error executing statement: " + e.getMessage(), e);
+            System.out.println(e);
+            throw new Exception("Ошибка при выполнении DB Query Reader: " + e.getMessage());
         } finally {
             if (resultSet != null) resultSet.close();
             if (statement != null) statement.close();

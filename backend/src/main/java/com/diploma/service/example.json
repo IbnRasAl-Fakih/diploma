@@ -1,5 +1,5 @@
 {
-    "workflowId": "2f98640a-ef73-487a-a066-c8b544e81409",
+    "workflowId": "4dae3789-fe20-4fea-a13f-eb9e6b8f7f98",
     "nodes": [
         {
             "node_id": "2f7ce3da-1851-4c8d-a6b3-cb7f9ab33c93",
@@ -8,9 +8,9 @@
             "outputs": [],
             "fields": {
                 "databaseType": "PostgreSQL",
-                "url": "jdbc:postgresql://localhost:5432/lms",
+                "url": "jdbc:postgresql://localhost:5432/Quizlet",
                 "username": "postgres",
-                "password": "qwerty123",
+                "password": "ibnrasalfakih12141522",
                 "driver": "org.postgresql.Driver"
             }
         }, 
@@ -28,7 +28,30 @@
             "inputs": ["4a49db1f-fb75-4ee3-b89d-c67cc3144c94"],
             "outputs": [],
             "fields": {
-                "tableName": "Users"
+                "tableName": "truefalse"
+            }
+        }, 
+        {
+            "node_id": "bc8da02b-97ed-4d7e-b334-4145dc1f7dad",
+            "type": "db_row_filter",
+            "inputs": ["a922dd32-3d18-411f-aab6-902619e4ab2f"],
+            "outputs": [],
+            "fields": {
+                "filters": [
+                    {
+                    "column": "answer",
+                    "operator": "=",
+                    "value": "true"
+                    }
+                ]
+            }
+        },
+        {
+            "node_id": "7b11b97d-0b92-41c5-b5a4-0f710a4c6c17",
+            "type": "db_query_executor",
+            "inputs": ["bc8da02b-97ed-4d7e-b334-4145dc1f7dad"],
+            "outputs": [],
+            "fields": {
             }
         }
 	]

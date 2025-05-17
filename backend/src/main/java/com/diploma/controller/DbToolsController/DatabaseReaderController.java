@@ -1,7 +1,7 @@
 package com.diploma.controller.DbToolsController;
 
-import com.diploma.dto.DbToolsDto.DatabaseQueryRequest;
-import com.diploma.service.DbToolsService.DatabaseQueryExecuterService;
+import com.diploma.dto.DbToolsDto.DatabaseReaderRequest;
+import com.diploma.service.DbToolsService.DatabaseReaderService;
 import com.diploma.utils.DatabaseConnectionPoolService;
 
 import java.util.List;
@@ -12,18 +12,18 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/db")
-public class DatabaseQueryExecuter {
+public class DatabaseReaderController {
 
-    private final DatabaseQueryExecuterService databaseQueryExecuterService;
+    private final DatabaseReaderService databaseQueryExecuterService;
     private final DatabaseConnectionPoolService connectionPoolService;
 
-    public DatabaseQueryExecuter(DatabaseQueryExecuterService databaseQueryExecuterService,DatabaseConnectionPoolService connectionPoolService) {
+    public DatabaseReaderController(DatabaseReaderService databaseQueryExecuterService,DatabaseConnectionPoolService connectionPoolService) {
         this.databaseQueryExecuterService = databaseQueryExecuterService;
         this.connectionPoolService = connectionPoolService;
     }
 
-    @PostMapping("/execute")
-    public ResponseEntity<?> executeQuery(@RequestBody DatabaseQueryRequest request) {
+    @PostMapping("/read")
+    public ResponseEntity<?> executeQuery(@RequestBody DatabaseReaderRequest request) {
 
         if (!connectionPoolService.hasConnection(request.getSessionId())) {
             return ResponseEntity.status(404).body("❌ Сессия не найдена: " + request.getSessionId());

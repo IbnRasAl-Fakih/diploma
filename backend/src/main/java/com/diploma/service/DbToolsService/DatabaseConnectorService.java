@@ -32,19 +32,22 @@ public class DatabaseConnectorService implements NodeExecutor{
 
             return connect(url, username, password, driver);
         } catch (Exception e) {
-            System.err.println("Error in execute(): " + e);
-            throw new Exception("❌ DB Connector error " + e.getMessage());
+            throw new Exception("Ошибка при выполнении execute() DB Connector: " + e.getMessage());
         }
     }
 
     public Map<String, String> connect(String url, String username, String password, String driver) throws Exception {
-        Class.forName(driver);
-        Connection connection = DriverManager.getConnection(url, username, password);
-        
-        String sessionId = UUID.randomUUID().toString();
-        
-        connectionPoolService.addConnection(sessionId, connection);
-        
-        return Map.of("sessionId", sessionId);
+        try {
+            Class.forName(driver);
+            Connection connection = DriverManager.getConnection(url, username, password);
+            
+            String sessionId = UUID.randomUUID().toString();
+            
+            connectionPoolService.addConnection(sessionId, connection);
+            
+            return Map.of("sessionId", sessionId);
+        } catch (Exception e) {
+            throw new Exception("Ошибка при выполнении DB Connector: " + e.getMessage());
+        }
     }
 }
