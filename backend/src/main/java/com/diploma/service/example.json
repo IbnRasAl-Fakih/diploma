@@ -16,10 +16,52 @@
         },
         {
             "node_id": "5c5d0ec5-d7e0-4045-9e22-eec55794e9b6",
-            "type": "excel_writer",
+            "type": "row_filter",
             "inputs": ["2f7ce3da-1851-4c8d-a6b3-cb7f9ab33c93"],
             "outputs": [],
             "fields": {
+                "column": "Id",
+                "operator": "=",
+                "value": "24",
+                "caseSensitive": true,
+                "excludeMatches": false
+            }
+        },
+        {
+            "node_id": "c8aa41b6-1563-43a5-99b0-efb1ee57267e",
+            "type": "column_filter",
+            "inputs": ["5c5d0ec5-d7e0-4045-9e22-eec55794e9b6"],
+            "outputs": [],
+            "fields": {
+                "columnsToRemove": [
+                    "Id", "CreatedAt", "UpdatedAt", "DateAndTime"
+                ]
+            }
+        },
+        {
+            "node_id": "20b4a31c-881f-4af1-bd50-0ece5590339a",
+            "type": "column_renamer",
+            "inputs": ["c8aa41b6-1563-43a5-99b0-efb1ee57267e"],
+            "outputs": [],
+            "fields": {
+                "renameMap": {
+                    "Label": "Name",
+                    "Task Id": "Age"
+                }
+            }
+        },
+        {
+            "node_id": "470ea6fd-37df-4e7a-a40c-6efcf068b502",
+            "type": "post_request",
+            "inputs": ["20b4a31c-881f-4af1-bd50-0ece5590339a"],
+            "outputs": [],
+            "fields": {
+                "url": "https://app.nocodb.com/api/v2/tables/mj0t5xdxuoqgg99/records",
+                "headers": {
+                    "xc-token": "H6ZnhaEL5XLrVmID1jwWGgp5xAeMKwD0NJF706pF",
+                    "Content-Type": "application/json"
+                },
+                "timeout": 10000
             }
         }
 	]

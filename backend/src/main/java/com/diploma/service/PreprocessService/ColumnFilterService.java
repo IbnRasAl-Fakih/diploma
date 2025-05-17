@@ -23,7 +23,7 @@ public class ColumnFilterService implements NodeExecutor {
     @Override
     public Object execute(Node node) {
         if (node.getInputs().isEmpty()) {
-            throw new IllegalArgumentException("ColumnFilter требует хотя бы один input (nodeId)");
+            throw new IllegalArgumentException("Column Filter требует хотя бы один input (nodeId)");
         }
 
         UUID inputNodeId = node.getInputs().get(0).getNodeId();

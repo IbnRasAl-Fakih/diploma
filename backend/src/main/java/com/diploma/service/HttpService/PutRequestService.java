@@ -29,10 +29,10 @@ public class PutRequestService implements NodeExecutor {
     }
 
     @Override
-    public Object execute(Node node) {
+    public Object execute(Node node) throws Exception {
 
         if (node.getInputs().isEmpty()) {
-            throw new IllegalArgumentException("Delete Request требует хотя бы один input (nodeId)");
+            throw new IllegalArgumentException("PUT Request требует хотя бы один input (nodeId)");
         }
 
         try {
@@ -48,29 +48,33 @@ public class PutRequestService implements NodeExecutor {
 
             return sendPutRequest(url, headers, body, timeoutMillis);
         } catch (Exception e) {
-            return Map.of("error", e.getMessage());
+            throw new Exception("Ошибка при выполнении execute() PUT Request: " + e.getMessage());
         }
     }
 
     public Object sendPutRequest(String url, Map<String, String> headers, List<Map<String, Object>> body, int timeoutMillis) throws Exception {
-        HttpClient client = HttpClient.newBuilder()
+        try {
+            HttpClient client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofMillis(timeoutMillis))
                 .build();
 
-        String requestBody = mapper.writeValueAsString(body);
+            String requestBody = mapper.writeValueAsString(body);
 
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .timeout(Duration.ofMillis(timeoutMillis))
-                .PUT(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8));
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofMillis(timeoutMillis))
+                    .PUT(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8));
 
-        if (headers != null) {
-            headers.forEach(requestBuilder::header);
+            if (headers != null) {
+                headers.forEach(requestBuilder::header);
+            }
+
+            HttpRequest request = requestBuilder.build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            return mapper.readValue(response.body(), Object.class);
+        } catch (Exception e) {
+            throw new Exception("Ошибка при выполнении PUT Request: " + e.getMessage());
         }
-
-        HttpRequest request = requestBuilder.build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        return mapper.readValue(response.body(), Object.class);
     }
 }

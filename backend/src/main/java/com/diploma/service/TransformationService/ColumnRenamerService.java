@@ -22,7 +22,7 @@ public class ColumnRenamerService implements NodeExecutor {
     @Override
     public Object execute(Node node) {
         if (node.getInputs().isEmpty()) {
-            throw new IllegalArgumentException("ColumnRenamerService требует хотя бы один input (nodeId)");
+            throw new IllegalArgumentException("Column Renamer требует хотя бы один input (nodeId)");
         }
 
         UUID inputNodeId = node.getInputs().get(0).getNodeId();
@@ -30,7 +30,7 @@ public class ColumnRenamerService implements NodeExecutor {
 
         ColumnRenamerRequest request = new ColumnRenamerRequest();
         request.setData(data);
-        request.setRenameMap((Map<String, String>) node.getFields().get(" "));
+        request.setRenameMap((Map<String, String>) node.getFields().get("renameMap"));
 
         List<Map<String, Object>> result = renameColumns(request);
 

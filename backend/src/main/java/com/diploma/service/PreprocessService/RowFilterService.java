@@ -1,6 +1,5 @@
 package com.diploma.service.PreprocessService;
 
-import com.diploma.dto.PreprocessDto.MissingValuesRequest;
 import com.diploma.dto.PreprocessDto.RowFilterRequest;
 import com.diploma.model.Node;
 import com.diploma.service.ResultService;
@@ -29,7 +28,7 @@ public class RowFilterService implements NodeExecutor {
     @Override
     public Object execute(Node node) {
         if (node.getInputs().isEmpty()) {
-            throw new IllegalArgumentException("RowFilter требует хотя бы один input (nodeId)");
+            throw new IllegalArgumentException("Row Filter требует хотя бы один input (nodeId)");
         }
 
         UUID inputNodeId = node.getInputs().get(0).getNodeId();
