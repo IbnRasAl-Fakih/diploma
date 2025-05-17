@@ -1,13 +1,43 @@
 package com.diploma.service.TransformationService;
 
 import com.diploma.dto.TransformationDto.GroupByAdvancedRequest;
+import com.diploma.service.ResultService;
+import com.diploma.utils.NodeExecutor;
+import com.diploma.utils.NodeType;
+import com.diploma.model.Node;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class GroupByAdvancedService {
+@NodeType("Group_By")
+public class GroupByAdvancedService implements NodeExecutor {
+
+    private final ResultService resultService;
+
+    public GroupByAdvancedService(ResultService resultService) {
+        this.resultService = resultService;
+    }
+
+    @Override
+        public Object execute(Node node) {
+            if (node.getInputs().isEmpty()) {
+                throw new IllegalArgumentException("GroupByAdvancedService requires at least one input (nodeId)");
+            }
+    
+            UUID inputNodeId = node.getInputs().get(0).getNodeId();
+            List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
+    
+            GroupByAdvancedRequest request = new GroupByAdvancedRequest();
+            request.setData(data);
+            request.setGroupByColumns((List<String>) node.getFields().get("groupByColumns"));
+            request.setAggregationMapping((Map<String, String>) node.getFields().get("aggregationMapping"));
+    
+            List<Map<String, Object>> result = groupBy(request);
+    
+            return Map.of("result", result);
+        }
 
     public List<Map<String, Object>> groupBy(GroupByAdvancedRequest req) {
         Map<String, List<Map<String, Object>>> grouped = req.getData().stream()

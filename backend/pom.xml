@@ -143,7 +143,7 @@
 					<changeLogFile>src/main/resources/db/changelog/master.xml</changeLogFile>
 					<url>jdbc:postgresql://localhost:5432/etl</url>
 					<username>postgres</username>
-					<password>qwerty123</password>
+					<password>161291_Era</password>
 					<driver>org.postgresql.Driver</driver>
 				</configuration>
 				</plugin>
