@@ -71,7 +71,6 @@ public class DatabaseReaderService implements NodeExecutor {
             boolean hasResultSet = statement.execute(statementQuery);
 
             if (hasResultSet) {
-                System.out.println("Hello from if");
                 resultSet = statement.getResultSet();
                 int columnCount = resultSet.getMetaData().getColumnCount();
 
@@ -86,6 +85,10 @@ public class DatabaseReaderService implements NodeExecutor {
                     }
                     resultList.add(rowMap);
                 }
+
+                System.out.println("************************************"); //delete
+                System.out.println("Hello from DB Reader: " + resultList.toString());               //delete
+                System.out.println("************************************"); //delete
 
                 return resultList;
             }

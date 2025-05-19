@@ -14,6 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ResultProcessorDto {
     private UUID nodeId;
+    private String type;
     private UUID workflowId;
     private Object result;
 }

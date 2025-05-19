@@ -64,39 +64,58 @@ public class DbRowFilterService implements NodeExecutor {
             throw new IllegalArgumentException("Invalid sessionId or connection not found");
         }
 
-        StringBuilder whereClause = new StringBuilder();
-        StringJoiner whereConditions = new StringJoiner(" AND ");
+        // Используем точное имя таблицы, не изменяя регистр
+        String tableNameToUse = "\"" + tableName + "\""; // Экранируем название таблицы в кавычки
 
-        for (FilterCondition condition : filters) {
-            whereConditions.add(condition.getColumn() + " " + condition.getOperator() + " ?");
+        StringJoiner whereConditionsForExec = new StringJoiner(" AND ");
+        StringJoiner whereConditionsForUserSql = new StringJoiner(" AND ");
+
+        for (FilterCondition filter : filters) {
+            String column = filter.getColumn();
+            String operator = filter.getOperator();
+            String val = filter.getValue();
+
+            String dataType = columnTypeService.getColumnType(sessionId, tableName, column).toLowerCase();
+
+            String userCondition;
+            if ("bool".equals(dataType) || "boolean".equals(dataType)) {
+                userCondition = column + " " + operator + " " + Boolean.parseBoolean(val);
+            } else if ("int2".equals(dataType) || "int4".equals(dataType) || "int8".equals(dataType) ||
+                    "float4".equals(dataType) || "float8".equals(dataType) ||
+                    "numeric".equals(dataType) || "decimal".equals(dataType)) {
+                userCondition = column + " " + operator + " " + val;
+            } else {
+                String escapedVal = val.replace("'", "''");
+                userCondition = column + " " + operator + " '" + escapedVal + "'";
+            }
+            whereConditionsForUserSql.add(userCondition);
+
+            whereConditionsForExec.add(column + " " + operator + " ?");
         }
 
-        if (!filters.isEmpty()) {
-            whereClause.append(" WHERE ").append(whereConditions);
-        }
+        String whereClauseForExec = filters.isEmpty() ? "" : " WHERE " + whereConditionsForExec.toString();
+        String whereClauseForUserSql = filters.isEmpty() ? "" : " WHERE " + whereConditionsForUserSql.toString();
 
-        String userSql = "SELECT * FROM " + tableName + whereClause;
-        String countSql = "SELECT COUNT(*) FROM " + tableName + whereClause;
+        String userSql = "SELECT * FROM " + tableNameToUse + whereClauseForUserSql;
+        String countSql = "SELECT COUNT(*) FROM " + tableNameToUse + whereClauseForExec;
 
         int count;
         try (PreparedStatement stmt = connection.prepareStatement(countSql)) {
             for (int i = 0; i < filters.size(); i++) {
                 FilterCondition filter = filters.get(i);
-                String dataType = columnTypeService.getColumnType(sessionId, tableName, filter.getColumn());
-
-                System.out.println("DataType: " + dataType); // delete
+                String dataType = columnTypeService.getColumnType(sessionId, tableName, filter.getColumn()).toLowerCase();
 
                 int paramIndex = i + 1;
                 String val = filter.getValue();
 
-                switch (dataType.toLowerCase()) {
+                switch (dataType) {
                     case "bool":
                     case "boolean":
                         stmt.setBoolean(paramIndex, Boolean.parseBoolean(val));
                         break;
-                    case "int4": // PostgreSQL integer
-                    case "int8": // bigint
-                    case "int2": // smallint
+                    case "int4":
+                    case "int8":
+                    case "int2":
                         stmt.setInt(paramIndex, Integer.parseInt(val));
                         break;
                     case "float4":
@@ -114,9 +133,10 @@ public class DbRowFilterService implements NodeExecutor {
             ResultSet rs = stmt.executeQuery();
             count = rs.next() ? rs.getInt(1) : 0;
         } catch (Exception e) {
-            throw new Exception("Ошибка при выполнении DB Row Filter: " + e.getMessage());
+            throw new Exception("Ошибка при выполнении DB Row Filter: " + e.getMessage(), e);
         }
 
         return Map.of("sqlCommand", userSql, "count", count);
     }
+
 }

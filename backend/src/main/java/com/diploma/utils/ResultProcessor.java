@@ -28,6 +28,7 @@ public class ResultProcessor {
         try {
             Result result = Result.builder()
                     .nodeId(dto.getNodeId())
+                    .type(dto.getType())
                     .workflowId(dto.getWorkflowId())
                     .result(normalized)
                     .createdAt(LocalDateTime.now())
@@ -38,6 +39,7 @@ public class ResultProcessor {
     
             return ResultResponseDto.builder()
                     .nodeId(saved.getNodeId())
+                    .type(saved.getType())
                     .workflowId(saved.getWorkflowId())
                     .result(normalized)
                     .createdAt(saved.getCreatedAt())

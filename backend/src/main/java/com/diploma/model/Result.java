@@ -23,6 +23,9 @@ public class Result {
     @Column(name = "node_id", nullable = false)
     private UUID nodeId;
 
+    @Column(name = "type")
+    private String type;
+
     @Column(name = "workflow_id", nullable = false)
     private UUID workflowId;
 

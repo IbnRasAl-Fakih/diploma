@@ -33,6 +33,7 @@ public ResponseEntity<?> executeExcelReaderNode(
         
         processor.putToDatabase(new ResultProcessorDto(
                 request.getNodeId(),
+                request.getType(),
                 request.getWorkflowId(),
                 result
         ));

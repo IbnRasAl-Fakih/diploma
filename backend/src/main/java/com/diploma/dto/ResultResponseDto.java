@@ -17,6 +17,7 @@ import java.util.UUID;
 @Builder
 public class ResultResponseDto {
     private UUID nodeId;
+    private String type;
     private UUID workflowId;
     private Map<String, Object> result;
     private LocalDateTime createdAt;

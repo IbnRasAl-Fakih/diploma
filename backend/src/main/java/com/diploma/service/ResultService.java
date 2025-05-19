@@ -28,6 +28,7 @@ public class ResultService {
     public ResultResponseDto create(ResultRequestDto dto) {
         Result result = new Result();
         result.setNodeId(dto.getNodeId());
+        result.setType(dto.getType());
         result.setWorkflowId(dto.getWorkflowId());
         result.setResult(dto.getResult());
         result.setCreatedAt(LocalDateTime.now());
@@ -61,6 +62,7 @@ public class ResultService {
     
             return ResultResponseDto.builder()
                     .nodeId(result.getNodeId())
+                    .type(result.getType())
                     .workflowId(result.getWorkflowId())
                     .result(fullResult)
                     .createdAt(result.getCreatedAt())
@@ -74,6 +76,7 @@ public class ResultService {
                 .orElseThrow(() -> new RuntimeException("Result не найден"));
 
         result.setWorkflowId(dto.getWorkflowId());
+        result.setType(dto.getType());
         result.setNodeId(dto.getNodeId());
         result.setResult(dto.getResult());
         result.setUpdatedAt(LocalDateTime.now());
@@ -106,6 +109,7 @@ public class ResultService {
     private ResultResponseDto mapToDto(Result r) {
         return new ResultResponseDto(
                 r.getNodeId(),
+                r.getType(),
                 r.getWorkflowId(),
                 r.getResult(),
                 r.getCreatedAt(),

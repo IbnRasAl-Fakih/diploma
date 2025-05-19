@@ -14,6 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ResultRequestDto {
     private UUID nodeId;
+    private String type;
     private UUID workflowId;
     private Map<String, Object> result;
 }

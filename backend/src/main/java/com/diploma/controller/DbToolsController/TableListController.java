@@ -21,7 +21,7 @@ public class TableListController {
     @PostMapping("/tables")
     public ResponseEntity<?> listTables(@RequestBody TableListRequest request) {
         try {
-            List<String> tables = tableListService.listTables(request.getSessionId());
+            Map<String, Object> tables = tableListService.listTables(request.getSessionId());
             return ResponseEntity.ok(tables);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(404).body("❌ " + e.getMessage());

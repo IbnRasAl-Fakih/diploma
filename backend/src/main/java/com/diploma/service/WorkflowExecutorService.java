@@ -89,16 +89,16 @@ public class WorkflowExecutorService {
 
                     if (sessionService.doesSessionExist(workflowId, url)) {
                         Session session = sessionService.getByWorkflowIdAndUrl(workflowId, url);
-                        processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), workflowId, Map.of("sessionId", session.getSessionId())));
+                        processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), node.getType(), workflowId, Map.of("sessionId", session.getSessionId())));
                         sessionService.addSession(workflowId, node.getNodeId(), session.getSessionId(), url);
                     } else {
                         Object result = executor.execute(node);
-                        processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), workflowId, result));
+                        processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), node.getType(), workflowId, result));
                         sessionService.addSession(workflowId, node.getNodeId(), UUID.fromString((String) ((Map<?, ?>) result).get("sessionId")), url);
                     }
                 } else {
                     Object result = executor.execute(node);
-                    processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), workflowId, result));
+                    processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), node.getType(), workflowId, result));
                 }
             } catch (Exception e) {
                 throw new RuntimeException("❌ Execution failed for node " + node.getNodeId() + ": " + e.getMessage(), e);

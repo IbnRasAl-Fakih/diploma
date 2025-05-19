@@ -41,31 +41,31 @@ public class TableListService implements NodeExecutor {
             Node dataContainsNode = findNodeService.findNode(node, "db_connector");
             UUID sessionId = sessionService.getByNodeId(dataContainsNode.getNodeId()).getSessionId();
 
-            List<String> result = listTables(sessionId.toString());
-            return Map.of("result", result);
+            Map<String, Object> result = listTables(sessionId.toString());
+            return result;
 
         } catch (Exception e) {
             throw new Exception("Ошибка при выполнении execute() DB Table List: " + e.getMessage());
         }
     }
 
-    public List<String> listTables(String sessionId) throws Exception {
+    public Map<String, Object> listTables(String sessionId) throws Exception {
         Connection connection = connectionPoolService.getConnection(sessionId);
         if (connection == null) {
             throw new IllegalArgumentException("Session not found: " + sessionId);
         }
 
-        List<String> tables = new ArrayList<>();
+        List<Map<String, String>> tables = new ArrayList<>();
         DatabaseMetaData metaData = connection.getMetaData();
 
         try (ResultSet rs = metaData.getTables(null, null, "%", new String[]{"TABLE"})) {
             while (rs.next()) {
-                tables.add(rs.getString("TABLE_NAME"));
+                tables.add(Map.of("tableName", rs.getString("TABLE_NAME")));
             }
         } catch (Exception e) {
             throw new Exception("Ошибка при выполнении DB Table List: " + e.getMessage());
         }
 
-        return tables;
+        return Map.of("tables", tables);
     }
 }

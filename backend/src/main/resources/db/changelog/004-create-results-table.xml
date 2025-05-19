@@ -12,6 +12,10 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
 
+            <column name="type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
             <column name="workflow_id" type="UUID">
                 <constraints nullable="false" foreignKeyName="fk_results_workflow" references="workflows(id)"/>
             </column>
