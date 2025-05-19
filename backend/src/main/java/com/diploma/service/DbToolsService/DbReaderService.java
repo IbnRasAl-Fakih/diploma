@@ -20,15 +20,15 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
-@NodeType("db_query_executor")
-public class DatabaseReaderService implements NodeExecutor {
+@NodeType("db_reader")
+public class DbReaderService implements NodeExecutor {
 
     private final DatabaseConnectionPoolService connectionPoolService;
     private final FindNodeService findNodeService;
     private final SessionService sessionService;
     private final ResultService resultService;
 
-    public DatabaseReaderService(DatabaseConnectionPoolService connectionPoolService, FindNodeService findNodeService, SessionService sessionService, ResultService resultService) {
+    public DbReaderService(DatabaseConnectionPoolService connectionPoolService, FindNodeService findNodeService, SessionService sessionService, ResultService resultService) {
         this.connectionPoolService = connectionPoolService;
         this.findNodeService = findNodeService;
         this.sessionService = sessionService;
@@ -85,10 +85,6 @@ public class DatabaseReaderService implements NodeExecutor {
                     }
                     resultList.add(rowMap);
                 }
-
-                System.out.println("************************************"); //delete
-                System.out.println("Hello from DB Reader: " + resultList.toString());               //delete
-                System.out.println("************************************"); //delete
 
                 return resultList;
             }

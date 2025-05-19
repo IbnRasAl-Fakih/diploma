@@ -1,5 +1,5 @@
 {
-    "workflowId": "4f80e029-9604-4ada-ba43-8c6590bc0370",
+    "workflowId": "8a8a1064-cf41-4733-9447-6895986b7b37",
     "nodes": [
         {
             "node_id": "2f7ce3da-1851-4c8d-a6b3-cb7f9ab33c93",
@@ -8,19 +8,50 @@
             "outputs": [],
             "fields": {
                 "databaseType": "PostgreSQL",
-                "url": "jdbc:postgresql://localhost:5432/airtable",
+                "url": "jdbc:postgresql://localhost:5432/Quizlet",
                 "username": "postgres",
-                "password": "qwerty123",
+                "password": "ibnrasalfakih12141522",
                 "driver": "org.postgresql.Driver"
             }
         },
         {
             "node_id": "5c5d0ec5-d7e0-4045-9e22-eec55794e9b6",
-            "type": "db_query_reader",
+            "type": "db_table_list",
             "inputs": ["2f7ce3da-1851-4c8d-a6b3-cb7f9ab33c93"],
             "outputs": [],
             "fields": {
-                "statementQuery": "select * from funnel"
+            }
+        },
+        {
+            "node_id": "9a14c870-eb6d-4275-b994-7aca34709b67",
+            "type": "db_table_selector",
+            "inputs": ["5c5d0ec5-d7e0-4045-9e22-eec55794e9b6"],
+            "outputs": [],
+            "fields": {
+                "tableName": "openended"
+            }
+        },
+        {
+            "node_id": "570c2b8d-b19a-45ae-a23b-f22200a95d2f",
+            "type": "db_row_filter",
+            "inputs": ["9a14c870-eb6d-4275-b994-7aca34709b67"],
+            "outputs": [],
+            "fields": {
+                "filters": [
+                        {
+                            "column": "answer",
+                            "operator": "=",
+                            "value": "Тиграхауда"
+                        }
+                ]
+            }
+        },
+        {
+            "node_id": "e5a2e77c-e355-4297-8cc1-7c3cfb1a46b3",
+            "type": "db_reader",
+            "inputs": ["570c2b8d-b19a-45ae-a23b-f22200a95d2f"],
+            "outputs": [],
+            "fields": {
             }
         }
 	]
