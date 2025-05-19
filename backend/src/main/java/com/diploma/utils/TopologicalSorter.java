@@ -19,9 +19,11 @@ public class TopologicalSorter {
             graph.put(id, new ArrayList<>());
             idToNode.put(id, node);
 
-            if (type != null && type.toLowerCase().contains("reader")) {
-                readerIds.add(id);
-                System.out.println("📘 Reader node found: " + id);
+            if (type != null) {
+                    if ("excel_reader".equalsIgnoreCase(type) || "csv_reader".equalsIgnoreCase(type)) {
+                    readerIds.add(id);
+                    System.out.println("Reader node found: " + id);
+                }
             }
         }
 

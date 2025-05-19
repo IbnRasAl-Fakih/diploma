@@ -3,7 +3,6 @@ package com.diploma.service.DbToolsService;
 import org.springframework.stereotype.Service;
 
 import com.diploma.model.Node;
-import com.diploma.service.ResultService;
 import com.diploma.utils.DatabaseConnectionPoolService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
@@ -14,39 +13,36 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 @Service
-@NodeType("db_query_executor")
-public class DatabaseReaderService implements NodeExecutor {
+@NodeType("db_query_reader")
+public class DbQueryReaderService implements NodeExecutor {
 
     private final DatabaseConnectionPoolService connectionPoolService;
     private final FindNodeService findNodeService;
     private final SessionService sessionService;
-    private final ResultService resultService;
 
-    public DatabaseReaderService(DatabaseConnectionPoolService connectionPoolService, FindNodeService findNodeService, SessionService sessionService, ResultService resultService) {
+    public DbQueryReaderService(DatabaseConnectionPoolService connectionPoolService, FindNodeService findNodeService, SessionService sessionService) {
         this.connectionPoolService = connectionPoolService;
         this.findNodeService = findNodeService;
         this.sessionService = sessionService;
-        this.resultService = resultService;
     }
 
     @Override
     public Object execute(Node node) throws Exception {
         if (node.getInputs().isEmpty()) {
-            throw new IllegalArgumentException("DB Reader требует хотя бы один input (nodeId)");
+            throw new IllegalArgumentException("DB Query Reader требует хотя бы один input (nodeId)");
         }
 
         try {
             Node dataContainsNode = findNodeService.findNode(node, "db_connector");
             UUID sessionId = sessionService.getByNodeId(dataContainsNode.getNodeId()).getSessionId();
 
-            List<Map<String, Object>> data = resultService.getDataFromNode(node.getInputs().get(0).getNodeId());
-            String statementQuery = data.get(0).get("sqlCommand").toString();
+            String statementQuery = (String) node.getFields().get("statementQuery");
 
             if (statementQuery == null || statementQuery.isBlank()) {
                 throw new IllegalArgumentException("Поле 'statementQuery' не должно быть пустым");
@@ -56,7 +52,7 @@ public class DatabaseReaderService implements NodeExecutor {
             return Map.of("result", result);
 
         } catch (Exception e) {
-            throw new Exception("Ошибка при выполнении execute() DB Reader: " + e.getMessage());
+            throw new Exception("Ошибка при выполнении execute() DB Query Reader: " + e.getMessage());
         }
     }
 
@@ -77,7 +73,7 @@ public class DatabaseReaderService implements NodeExecutor {
                 List<Map<String, Object>> resultList = new ArrayList<>();
 
                 while (resultSet.next()) {
-                    Map<String, Object> rowMap = new HashMap<>();
+                    Map<String, Object> rowMap = new LinkedHashMap<>();
                     for (int i = 1; i <= columnCount; i++) {
                         String columnName = resultSet.getMetaData().getColumnName(i);
                         Object columnValue = resultSet.getObject(i);
@@ -86,17 +82,13 @@ public class DatabaseReaderService implements NodeExecutor {
                     resultList.add(rowMap);
                 }
 
-                System.out.println("************************************"); //delete
-                System.out.println("Hello from DB Reader: " + resultList.toString());               //delete
-                System.out.println("************************************"); //delete
-
                 return resultList;
             }
 
             return new ArrayList<>();
         } catch (Exception e) {
             System.out.println(e);
-            throw new Exception("Ошибка при выполнении DB Reader: " + e.getMessage());
+            throw new Exception("Ошибка при выполнении DB Query Reader: " + e.getMessage());
         } finally {
             if (resultSet != null) resultSet.close();
             if (statement != null) statement.close();

@@ -5,11 +5,13 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.diploma.dto.IoToolsDto.ExcelReader.ExcelReaderRequest;
+import com.diploma.utils.NodeType;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
+@NodeType("excel_reader")
 public class ExcelReadService {
 
     public static List<Map<String, Object>> readExcel(MultipartFile file, ExcelReaderRequest request)

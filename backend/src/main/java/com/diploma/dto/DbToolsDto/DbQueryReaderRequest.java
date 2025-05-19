@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class DatabaseReaderRequest {
+public class DbQueryReaderRequest {
     private String sessionId;
     private String statement;
 }

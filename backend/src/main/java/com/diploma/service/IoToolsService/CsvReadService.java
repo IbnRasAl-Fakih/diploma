@@ -2,11 +2,14 @@ package com.diploma.service.IoToolsService;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.diploma.utils.NodeType;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
+@NodeType("csv_reader")
 public class CsvReadService {
 
     public static List<Map<String, Object>> readCsvAsJson(MultipartFile file, String delimiter) throws IOException {

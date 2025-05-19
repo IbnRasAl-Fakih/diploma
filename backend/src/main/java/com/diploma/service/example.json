@@ -8,7 +8,7 @@
             "outputs": [],
             "fields": {
                 "databaseType": "PostgreSQL",
-                "url": "jdbc:postgresql://localhost:5432/lms",
+                "url": "jdbc:postgresql://localhost:5432/airtable",
                 "username": "postgres",
                 "password": "qwerty123",
                 "driver": "org.postgresql.Driver"
@@ -16,10 +16,11 @@
         },
         {
             "node_id": "5c5d0ec5-d7e0-4045-9e22-eec55794e9b6",
-            "type": "db_table_list",
+            "type": "db_query_reader",
             "inputs": ["2f7ce3da-1851-4c8d-a6b3-cb7f9ab33c93"],
             "outputs": [],
             "fields": {
+                "statementQuery": "select * from funnel"
             }
         }
 	]
