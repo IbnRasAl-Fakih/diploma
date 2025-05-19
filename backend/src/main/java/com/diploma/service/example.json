@@ -16,42 +16,25 @@
         },
         {
             "node_id": "5c5d0ec5-d7e0-4045-9e22-eec55794e9b6",
-            "type": "db_table_list",
+            "type": "db_table_creator",
             "inputs": ["2f7ce3da-1851-4c8d-a6b3-cb7f9ab33c93"],
             "outputs": [],
             "fields": {
-            }
-        },
-        {
-            "node_id": "9a14c870-eb6d-4275-b994-7aca34709b67",
-            "type": "db_table_selector",
-            "inputs": ["5c5d0ec5-d7e0-4045-9e22-eec55794e9b6"],
-            "outputs": [],
-            "fields": {
-                "tableName": "openended"
-            }
-        },
-        {
-            "node_id": "570c2b8d-b19a-45ae-a23b-f22200a95d2f",
-            "type": "db_row_filter",
-            "inputs": ["9a14c870-eb6d-4275-b994-7aca34709b67"],
-            "outputs": [],
-            "fields": {
-                "filters": [
-                        {
-                            "column": "answer",
-                            "operator": "=",
-                            "value": "Тиграхауда"
-                        }
+                "tableName": " my second TABLE",
+                "columns": [
+                    {
+                    "columnName": "id",
+                    "columnType": "SERIAL PRIMARY KEY"
+                    },
+                    {
+                    "columnName": "username",
+                    "columnType": "VARCHAR(255) NOT NULL"
+                    },
+                    {
+                    "columnName": "created_at",
+                    "columnType": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                    }
                 ]
-            }
-        },
-        {
-            "node_id": "e5a2e77c-e355-4297-8cc1-7c3cfb1a46b3",
-            "type": "db_reader",
-            "inputs": ["570c2b8d-b19a-45ae-a23b-f22200a95d2f"],
-            "outputs": [],
-            "fields": {
             }
         }
 	]
