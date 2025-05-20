@@ -56,7 +56,7 @@
         },
         {
             "node_id": "8855f6de-0f7f-4f60-bada-9240c6b8ac1a",
-            "type": "db_writer",
+            "type": "db_merge",
             "inputs": ["ca2cf5d7-5047-4e1f-a3f2-0964c95a3fa9", "ba425efa-f4c3-4253-91b5-9b58417e1e3f"],
             "outputs": [],
             "fields": {
@@ -65,3 +65,16 @@
         }
 	]
 }
+
+
+    {
+    "sessionId": "57e0d5ae-5bd0-45cf-8144-7f59ff96bc65",
+    "tableName": "task_logs_noco_db",
+    "body": [
+        {"id":150,"label":"In progress","task_id":80},
+        {"id":145,"label":"In progress","task_id":80},
+        {"id":26,"label":"In progress","task_id":80},
+        {"id":200,"label":"In progress","task_id":80},
+        {"id":74,"label":"In progress","task_id":80}
+    ]
+    }
