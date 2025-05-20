@@ -30,6 +30,10 @@ public class DbTableRemoverService implements NodeExecutor {
 
     @Override
     public Object execute(Node node) throws Exception {
+        if (node.getInputs().isEmpty()) {
+            throw new IllegalArgumentException("DB Table Remover требует хотя бы один input (nodeId)");
+        }
+
         try {
             Node dataContainsNode = findNodeService.findNode(node, "db_connector");
             UUID sessionId = sessionService.getByNodeId(dataContainsNode.getNodeId()).getSessionId();
