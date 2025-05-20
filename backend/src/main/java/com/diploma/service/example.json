@@ -65,16 +65,3 @@
         }
 	]
 }
-
-
-    {
-    "sessionId": "57e0d5ae-5bd0-45cf-8144-7f59ff96bc65",
-    "tableName": "task_logs_noco_db",
-    "body": [
-        {"id":150,"label":"In progress","task_id":80},
-        {"id":145,"label":"In progress","task_id":80},
-        {"id":26,"label":"In progress","task_id":80},
-        {"id":200,"label":"In progress","task_id":80},
-        {"id":74,"label":"In progress","task_id":80}
-    ]
-    }

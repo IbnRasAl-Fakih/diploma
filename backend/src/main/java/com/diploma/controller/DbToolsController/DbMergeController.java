@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/db-tools/merge")
+@RequestMapping("/api/db")
 public class DbMergeController {
 
     private final DbMergeService dbMergeService;
@@ -18,7 +18,7 @@ public class DbMergeController {
         this.dbMergeService = dbMergeService;
     }
 
-    @PostMapping
+    @PostMapping("/merge")
     public ResponseEntity<?> merge(@RequestBody DbMergeRequest request) {
         try {
             Map<String, String> result = dbMergeService.merge(request.getSessionId(), request.getTableName(), request.getBody());
