@@ -14,6 +14,8 @@ import com.diploma.model.Node;
 import com.diploma.model.Session;
 
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.reflections.Reflections;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -23,6 +25,7 @@ import java.util.*;
 @Component
 public class WorkflowExecutorService {
 
+    private static final Logger log = LoggerFactory.getLogger(WorkflowExecutorService.class);
     private final Map<String, NodeExecutor> executorRegistry = new HashMap<>();
     private final ResultProcessor processor;
     private final ApplicationContext context;
@@ -57,56 +60,57 @@ public class WorkflowExecutorService {
     }
 
     public void executeWorkflow(WorkflowExecutorRequestDto dto) throws Exception {
-        UUID workflowId = dto.getWorkflowId();
-        dbCleanerService.clean(workflowId);
-        List<Map<String, Object>> nodes = (List<Map<String, Object>>) dto.getNodes();
-        
-        
-        for (Map<String, Object> node : nodes) {
-            System.out.println("Node:");
-            for (Map.Entry<String, Object> entry : node.entrySet()) {
-                System.out.println("  " + entry.getKey() + ": " + entry.getValue());
-            }
+        if (dto == null || dto.getWorkflowId() == null || dto.getNodes() == null) {
+            throw new NodeExecutionException("❌ Workflow execution: Required fields are null.");
         }
 
-        List<Map<String, Object>> sortedNodes = TopologicalSorter.sort(nodes);
+        try {
+            UUID workflowId = dto.getWorkflowId();
+            dbCleanerService.clean(workflowId);
+            List<Map<String, Object>> nodes = (List<Map<String, Object>>) dto.getNodes();
 
-        List<Node> sortedMappedNodes = NodeMapper.mapToNodeList(sortedNodes);
+            List<Map<String, Object>> sortedNodes = TopologicalSorter.sort(nodes);
 
-        for (Node node : sortedMappedNodes) {
+            List<Node> sortedMappedNodes = NodeMapper.mapToNodeList(sortedNodes);
 
-            NodeExecutor executor = executorRegistry.get(node.getType());
-            if (executor == null) {
-                throw new IllegalArgumentException("❌ Unknown node type: " + node.getType());
-            }
+            for (Node node : sortedMappedNodes) {
 
-            if ("excel_reader".equals(node.getType()) || "csv_reader".equals(node.getType())) {
-                continue;
-            }
+                NodeExecutor executor = executorRegistry.get(node.getType());
+                if (executor == null) {
+                    throw new NodeExecutionException("❌ Unknown node type: " + node.getType());
+                }
 
-            try {
-                if ("db_connector".equals(node.getType())) {
-                    String url = (String) node.getFields().get("url");
+                if ("excel_reader".equals(node.getType()) || "csv_reader".equals(node.getType())) {
+                    continue;
+                }
 
-                    if (sessionService.doesSessionExist(workflowId, url)) {
-                        Session session = sessionService.getByWorkflowIdAndUrl(workflowId, url);
-                        processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), node.getType(), workflowId, Map.of("sessionId", session.getSessionId())));
-                        sessionService.addSession(workflowId, node.getNodeId(), session.getSessionId(), url);
+                try {
+                    if ("db_connector".equals(node.getType())) {
+                        String url = (String) node.getFields().get("url");
+
+                        if (sessionService.doesSessionExist(workflowId, url)) {
+                            Session session = sessionService.getByWorkflowIdAndUrl(workflowId, url);
+                            processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), node.getType(), workflowId, Map.of("sessionId", session.getSessionId())));
+                            sessionService.addSession(workflowId, node.getNodeId(), session.getSessionId(), url);
+                        } else {
+                            Object result = executor.execute(node);
+                            processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), node.getType(), workflowId, result));
+                            sessionService.addSession(workflowId, node.getNodeId(), UUID.fromString((String) ((Map<?, ?>) result).get("sessionId")), url);
+                        }
                     } else {
                         Object result = executor.execute(node);
                         processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), node.getType(), workflowId, result));
-                        sessionService.addSession(workflowId, node.getNodeId(), UUID.fromString((String) ((Map<?, ?>) result).get("sessionId")), url);
                     }
-                } else {
-                    Object result = executor.execute(node);
-                    processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), node.getType(), workflowId, result));
+                } catch (NodeExecutionException e) {
+                    throw e;
+
+                } catch (Exception e) {
+                    log.error("Execution failed for node " + node.getNodeId(), e);
+                    throw new NodeExecutionException("❌ Execution failed for node " + node.getNodeId());
                 }
-            } catch (Exception e) {
-                if (e instanceof NodeExecutionException) {
-                    throw (NodeExecutionException) e;
-                }
-                throw new NodeExecutionException("❌ Execution failed for node " + node.getNodeId(), e);
             }
+        } catch (NodeExecutionException e) {
+            throw e;
         }
     }
 }

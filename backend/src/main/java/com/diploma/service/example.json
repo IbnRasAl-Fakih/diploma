@@ -3,38 +3,25 @@
     "nodes": [
         {
             "node_id": "92256aea-abf5-4ac7-922b-73b9d53e384b",
-            "type": "db_connector",
+            "type": "get_request",
             "inputs": [],
             "outputs": [],
             "fields": {
-                "databaseType": "PostgreSQL",
-                "url": "jdbc:postgresql://localhost:5432/Quizlet",
-                "username": "postgres",
-                "password": "ibnrasalfakih12141522",
-                "driver": "org.postgresql.Driver"
+                "url": "https://app.nocodb.com/api/v2/tables/mqev0lgbfolp1if/records",
+                "headers": {
+                    "xc-token": "H6ZnhaEL5XLrVmID1jwWGgp5xAeMKwD0NJF706pF"
+                },
+                "timeout": 10000
             }
         },
         {
             "node_id": "8c3ac1a8-4586-4118-86ab-6af369902024",
-            "type": "db_table_creator",
+            "type": "node_sorter",
             "inputs": ["92256aea-abf5-4ac7-922b-73b9d53e384b"],
             "outputs": [],
             "fields": {
-                "tableName": "mcq",
-                "columns": [
-                {
-                    "columnName": "id",
-                    "columnType": "SERIAL PRIMARY KEY"
-                },
-                {
-                    "columnName": "username",
-                    "columnType": "VARCHAR(255) NOT NULL"
-                },
-                {
-                    "columnName": "created_at",
-                    "columnType": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-                }
-                ]
+                "columns": ["Task Id"],
+                "ascending": true
             }
         }
 	]

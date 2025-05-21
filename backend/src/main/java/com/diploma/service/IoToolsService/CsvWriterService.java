@@ -14,27 +14,27 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@NodeType("excel_writer")
-public class ExcelWriterService implements NodeExecutor {
+@NodeType("csv_writer")
+public class CsvWriterService implements NodeExecutor {
 
-    private static final Logger log = LoggerFactory.getLogger(ExcelWriterService.class);
+    private static final Logger log = LoggerFactory.getLogger(CsvWriterService.class);
     private final ResultService resultService;
 
-    public ExcelWriterService(ResultService resultService) {
+    public CsvWriterService(ResultService resultService) {
         this.resultService = resultService;
     }
 
     @Override
     public Object execute(Node node) throws Exception {
         if (node.getInputs().isEmpty()) {
-            throw new NodeExecutionException("❌ Excel Writer: Missing input node.");
+            throw new NodeExecutionException("❌ CSV Writer: Missing input node.");
         }
 
         try {
             List<Map<String, Object>> data = resultService.getDataFromNode(node.getInputs().get(0).getNodeId());
 
             if (data == null) {
-                throw new NodeExecutionException("❌ Excel Writer: Failed to get the result of the previous node.");
+                throw new NodeExecutionException("❌ CSV Writer: Failed to get the result of the previous node.");
             }
 
             return data;
@@ -43,8 +43,8 @@ public class ExcelWriterService implements NodeExecutor {
             throw e;
 
         } catch (Exception e) {
-            log.error("Excel Writer execution failed in method execute()", e);
-            throw new NodeExecutionException("❌ Excel Writer execution failed.");
+            log.error("CSV Writer execution failed in method execute()", e);
+            throw new NodeExecutionException("❌ CSV Writer execution failed.");
         }
     }
 }
