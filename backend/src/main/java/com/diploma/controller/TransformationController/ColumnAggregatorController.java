@@ -19,7 +19,7 @@ public class ColumnAggregatorController {
     }
 
     @PostMapping("/aggregate")
-    public ResponseEntity<List<Map<String, Object>>> aggregateColumns(@RequestBody ColumnAggregatorRequest request) {
+    public ResponseEntity<List<Map<String, Object>>> aggregateColumns(@RequestBody ColumnAggregatorRequest request) throws Exception {
         List<Map<String, Object>> result = columnAggregatorService.aggregateColumns(request);
         return ResponseEntity.ok(result);
     }

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/columns/rename")
+@RequestMapping("/api/columns")
 public class ColumnRenamerController {
 
     private final ColumnRenamerService columnRenamerService;
@@ -18,8 +18,8 @@ public class ColumnRenamerController {
         this.columnRenamerService = columnRenamerService;
     }
 
-    @PostMapping
-    public ResponseEntity<List<Map<String, Object>>> rename(@RequestBody ColumnRenamerRequest req) {
+    @PostMapping("/rename")
+    public ResponseEntity<List<Map<String, Object>>> rename(@RequestBody ColumnRenamerRequest req) throws Exception {
         return ResponseEntity.ok(columnRenamerService.renameColumns(req));
     }
 }

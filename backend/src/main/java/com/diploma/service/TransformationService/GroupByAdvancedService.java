@@ -1,19 +1,24 @@
 package com.diploma.service.TransformationService;
 
 import com.diploma.dto.TransformationDto.GroupByAdvancedRequest;
+import com.diploma.exception.NodeExecutionException;
 import com.diploma.service.ResultService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
 import com.diploma.model.Node;
-import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 @Service
 @NodeType("Group_By")
 public class GroupByAdvancedService implements NodeExecutor {
 
+    private static final Logger log = LoggerFactory.getLogger(GroupByAdvancedService.class);
     private final ResultService resultService;
 
     public GroupByAdvancedService(ResultService resultService) {
@@ -21,62 +26,96 @@ public class GroupByAdvancedService implements NodeExecutor {
     }
 
     @Override
-        public Object execute(Node node) {
-            if (node.getInputs().isEmpty()) {
-                throw new IllegalArgumentException("GroupByAdvancedService requires at least one input (nodeId)");
-            }
-    
+    public Object execute(Node node) throws Exception {
+        if (node.getInputs().isEmpty()) {
+            throw new NodeExecutionException("❌ Group By: Missing input node.");
+        }
+
+        try {
             UUID inputNodeId = node.getInputs().get(0).getNodeId();
             List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
-    
+
+            if (data == null) {
+                throw new NodeExecutionException("❌ Group By: Failed to get the result of the previous node.");
+            }
+
             GroupByAdvancedRequest request = new GroupByAdvancedRequest();
             request.setData(data);
             request.setGroupByColumns((List<String>) node.getFields().get("groupByColumns"));
             request.setAggregationMapping((Map<String, String>) node.getFields().get("aggregationMapping"));
-    
-            List<Map<String, Object>> result = groupBy(request);
-    
-            return Map.of("result", result);
-        }
 
-    public List<Map<String, Object>> groupBy(GroupByAdvancedRequest req) {
-        Map<String, List<Map<String, Object>>> grouped = req.getData().stream()
+            List<Map<String, Object>> result = groupBy(request);
+
+            return Map.of("result", result);
+
+        } catch (NodeExecutionException e) {
+            throw e;
+
+        } catch (Exception e) {
+            log.error("Group By execution failed in method execute()", e);
+            throw new NodeExecutionException("❌ Group By execution failed.");
+        }
+    }
+
+    public List<Map<String, Object>> groupBy(GroupByAdvancedRequest req) throws Exception {
+        try {
+
+            if (req.getGroupByColumns() == null || req.getAggregationMapping() == null) {
+                throw new NodeExecutionException("❌ Group By: Required fields are null.");
+            }
+
+            Map<String, List<Map<String, Object>>> grouped = req.getData().stream()
                 .collect(Collectors.groupingBy(row -> createGroupKey(row, req.getGroupByColumns())));
 
-        List<Map<String, Object>> result = new ArrayList<>();
+            List<Map<String, Object>> result = new ArrayList<>();
 
-        for (Map.Entry<String, List<Map<String, Object>>> entry : grouped.entrySet()) {
-            List<Map<String, Object>> groupRows = entry.getValue();
-            Map<String, Object> newRow = new LinkedHashMap<>();
-            Map<String, Object> exampleRow = groupRows.get(0);
+            for (Map.Entry<String, List<Map<String, Object>>> entry : grouped.entrySet()) {
+                List<Map<String, Object>> groupRows = entry.getValue();
+                Map<String, Object> newRow = new LinkedHashMap<>();
+                Map<String, Object> exampleRow = groupRows.get(0);
 
 
-            for (String groupCol : req.getGroupByColumns()) {
-                newRow.put(groupCol, exampleRow.get(groupCol));
-            }
-
-            for (Map.Entry<String, String> aggEntry : req.getAggregationMapping().entrySet()) {
-                String column = aggEntry.getKey();
-                String function = aggEntry.getValue();
-
-                validateDataTypes(groupRows, column, function);
-
-                switch (function.toUpperCase()) {
-                    case "SUM" -> newRow.put(column, sum(groupRows, column));
-                    case "AVG" -> newRow.put(column, avg(groupRows, column));
-                    case "MIN" -> newRow.put(column, min(groupRows, column));
-                    case "MAX" -> newRow.put(column, max(groupRows, column));
-                    case "STDDEV" -> newRow.put(column, stddev(groupRows, column));
-                    case "CONCAT" -> newRow.put(column, concat(groupRows, column));
-                    case "MODE" -> newRow.put(column, mode(groupRows, column));
-                    default -> throw new IllegalArgumentException("Unsupported aggregation function: " + function);
+                for (String groupCol : req.getGroupByColumns()) {
+                    newRow.put(groupCol, exampleRow.get(groupCol));
                 }
+
+                for (Map.Entry<String, String> aggEntry : req.getAggregationMapping().entrySet()) {
+                    String column = aggEntry.getKey();
+                    String function = aggEntry.getValue();
+
+                    validateDataTypes(groupRows, column, function);
+
+                   try {
+                        switch (function.toUpperCase()) {
+                            case "SUM" -> newRow.put(column, sum(groupRows, column));
+                            case "AVG" -> newRow.put(column, avg(groupRows, column));
+                            case "MIN" -> newRow.put(column, min(groupRows, column));
+                            case "MAX" -> newRow.put(column, max(groupRows, column));
+                            case "STDDEV" -> newRow.put(column, stddev(groupRows, column));
+                            case "CONCAT" -> newRow.put(column, concat(groupRows, column));
+                            case "MODE" -> newRow.put(column, mode(groupRows, column));
+                            default -> throw new NodeExecutionException("❌ Group By: Unsupported aggregation function '" + function + "'");
+                        }
+                    } catch (NumberFormatException | ClassCastException ex) {
+                        throw new NodeExecutionException("❌ Group By: Cannot apply '" + function + "' on non-numeric column '" + column + "'");
+                    }
+                }
+
+                result.add(newRow);
             }
 
-            result.add(newRow);
-        }
+            return result;
 
-        return result;
+        } catch (NodeExecutionException e) {
+            throw e; 
+
+        } catch (IllegalArgumentException e) {
+            throw new NodeExecutionException("❌ Group By: " + e.getMessage());
+
+        } catch (Exception e) {
+            log.error("Group By execution failed", e);
+            throw new NodeExecutionException("❌ Group By: Unknown error.");
+        }
     }
 
     private String createGroupKey(Map<String, Object> row, List<String> groupByColumns) {

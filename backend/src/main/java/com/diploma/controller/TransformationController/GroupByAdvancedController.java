@@ -19,7 +19,7 @@ public class GroupByAdvancedController {
     }
 
     @PostMapping
-    public ResponseEntity<List<Map<String, Object>>> groupBy(@RequestBody GroupByAdvancedRequest request) {
+    public ResponseEntity<List<Map<String, Object>>> groupBy(@RequestBody GroupByAdvancedRequest request) throws Exception {
         List<Map<String, Object>> result = groupByAdvancedService.groupBy(request);
         return ResponseEntity.ok(result);
     }

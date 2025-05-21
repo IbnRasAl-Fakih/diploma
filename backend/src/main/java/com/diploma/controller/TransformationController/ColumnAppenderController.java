@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/columns/append")
+@RequestMapping("/api/columns")
 public class ColumnAppenderController {
 
     private final ColumnAppenderService columnAppenderService;
@@ -18,8 +18,8 @@ public class ColumnAppenderController {
         this.columnAppenderService = columnAppenderService;
     }
 
-    @PostMapping
-    public ResponseEntity<List<Map<String, Object>>> append(@RequestBody ColumnAppenderRequest req) {
+    @PostMapping("/append")
+    public ResponseEntity<List<Map<String, Object>>> append(@RequestBody ColumnAppenderRequest req) throws Exception {
         return ResponseEntity.ok(columnAppenderService.appendColumns(req));
     }
 }
