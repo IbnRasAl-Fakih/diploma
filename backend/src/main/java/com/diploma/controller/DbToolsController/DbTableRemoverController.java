@@ -15,7 +15,7 @@ public class DbTableRemoverController {
         this.dbTableRemoverService = dbTableRemoverService;
     }
 
-    @PostMapping("/remove-table")
+    @PostMapping("/table-remove")
     public ResponseEntity<String> removeTable(@RequestBody DbTableRemoveRequest request) {
         try {
             dbTableRemoverService.removeTable(request.getSessionId(), request.getTableName());

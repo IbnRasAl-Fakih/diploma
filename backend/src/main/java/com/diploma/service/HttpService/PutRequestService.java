@@ -11,10 +11,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.net.ConnectException;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
@@ -37,7 +40,7 @@ public class PutRequestService implements NodeExecutor {
     public Object execute(Node node) throws Exception {
 
         if (node.getInputs().isEmpty()) {
-            throw new NodeExecutionException("❌ PUT Request: Missing input nodes.");
+            throw new NodeExecutionException("❌ PUT Request: Missing input node.");
         }
 
         try {
@@ -53,10 +56,15 @@ public class PutRequestService implements NodeExecutor {
             @SuppressWarnings("unchecked")
             Map<String, String> headers = (Map<String, String>) node.getFields().getOrDefault("headers", Map.of());
 
-            int timeoutMillis = (Integer) node.getFields().get("timeout");
+            Object timeoutObj = node.getFields().get("timeout");
+            int timeoutMillis;
 
-            if (timeoutMillis < 3000) {
-                timeoutMillis = 3000;
+            if (timeoutObj instanceof Integer) {
+                timeoutMillis = (Integer) timeoutObj;
+            } else if (timeoutObj instanceof String strVal && strVal.matches("\\d+")) {
+                timeoutMillis = Integer.parseInt(strVal);
+            } else {
+                throw new NodeExecutionException("❌ PUT Request: 'timeout' must be an integer value.");
             }
 
             if (url == null || url == "" || headers == null) {
@@ -64,9 +72,13 @@ public class PutRequestService implements NodeExecutor {
             }
 
             return sendPutRequest(url, headers, body, timeoutMillis);
+
+        } catch (NodeExecutionException e) {
+            throw e;
+
         } catch (Exception e) {
             log.error("PUT Request execution failed in method execute()", e);
-            throw new NodeExecutionException("❌ PUT Request execution failed: ", e);
+            throw new NodeExecutionException("❌ PUT Request execution failed.");
         }
     }
 
@@ -90,10 +102,28 @@ public class PutRequestService implements NodeExecutor {
             HttpRequest request = requestBuilder.build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
+            int statusCode = response.statusCode();
+            if (statusCode < 200 || statusCode >= 300) {
+                throw new NodeExecutionException("❌ PUT Request failed: HTTP " + statusCode + " — " + response.body());
+            }
+
             return mapper.readValue(response.body(), Object.class);
+
+        } catch (NodeExecutionException e) {
+            throw e; 
+
+        } catch (UnknownHostException e) {
+            throw new NodeExecutionException("❌ PUT Request: Unknown host - " + e.getMessage());
+
+        } catch (ConnectException e) {
+            throw new NodeExecutionException("❌ PUT Request: Connection refused - " + e.getMessage());
+
+        } catch (HttpTimeoutException e) {
+            throw new NodeExecutionException("❌ PUT Request: Timeout exceeded.");
+            
         } catch (Exception e) {
             log.error("PUT Request execution failed", e);
-            throw new NodeExecutionException("❌ PUT Request: ", e);
+            throw new NodeExecutionException("❌ PUT Request: Unknown error.");
         }
     }
 }

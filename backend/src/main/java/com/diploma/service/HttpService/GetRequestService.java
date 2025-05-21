@@ -47,7 +47,16 @@ public class GetRequestService implements NodeExecutor{
             @SuppressWarnings("unchecked")
             Map<String, String> queryParams = (Map<String, String>) node.getFields().getOrDefault("queryParams", Map.of());
 
-            int timeoutMillis = (Integer) node.getFields().get("timeout");
+            Object timeoutObj = node.getFields().get("timeout");
+            int timeoutMillis;
+
+            if (timeoutObj instanceof Integer) {
+                timeoutMillis = (Integer) timeoutObj;
+            } else if (timeoutObj instanceof String strVal && strVal.matches("\\d+")) {
+                timeoutMillis = Integer.parseInt(strVal);
+            } else {
+                throw new NodeExecutionException("❌ GET Request: 'timeout' must be an integer value.");
+            }
 
             if (url == null || url == "" || headers == null || queryParams == null) {
                 throw new NodeExecutionException("❌ GET Request: Missing required fields.");
@@ -60,7 +69,7 @@ public class GetRequestService implements NodeExecutor{
 
         } catch (Exception e) {
             log.error("GET Request execution failed in method execute()", e);
-            throw new NodeExecutionException("❌ GET Request execution failed");
+            throw new NodeExecutionException("❌ GET Request execution failed.");
         }
     }
 
@@ -95,17 +104,17 @@ public class GetRequestService implements NodeExecutor{
             throw e; 
 
         } catch (UnknownHostException e) {
-            throw new NodeExecutionException("❌ GET Request: Unknown host - " + e.getMessage(), e);
+            throw new NodeExecutionException("❌ GET Request: Unknown host - " + e.getMessage());
 
         } catch (ConnectException e) {
-            throw new NodeExecutionException("❌ GET Request: Connection refused - " + e.getMessage(), e);
+            throw new NodeExecutionException("❌ GET Request: Connection refused - " + e.getMessage());
 
         } catch (HttpTimeoutException e) {
-            throw new NodeExecutionException("❌ GET Request: Timeout exceeded", e);
+            throw new NodeExecutionException("❌ GET Request: Timeout exceeded.");
             
         } catch (Exception e) {
             log.error("GET Request execution failed", e);
-            throw new NodeExecutionException("❌ GET Request: " + (e.getMessage() != null ? e.getMessage() : "Unknown error"));
+            throw new NodeExecutionException("❌ GET Request: Unknown error.");
         }
     }
 

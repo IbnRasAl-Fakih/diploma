@@ -11,10 +11,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.net.ConnectException;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
@@ -37,7 +40,7 @@ public class PostRequestService implements NodeExecutor {
     public Object execute(Node node) throws Exception {
 
         if (node.getInputs().isEmpty()) {
-            throw new NodeExecutionException("❌ POST Request: Missing input nodes.");
+            throw new NodeExecutionException("❌ POST Request: Missing input node.");
         }
 
         try {
@@ -53,10 +56,15 @@ public class PostRequestService implements NodeExecutor {
             @SuppressWarnings("unchecked")
             Map<String, String> headers = (Map<String, String>) node.getFields().getOrDefault("headers", Map.of());
 
-            int timeoutMillis = (Integer) node.getFields().get("timeout");
+            Object timeoutObj = node.getFields().get("timeout");
+            int timeoutMillis;
 
-            if (timeoutMillis < 3000) {
-                timeoutMillis = 3000;
+            if (timeoutObj instanceof Integer) {
+                timeoutMillis = (Integer) timeoutObj;
+            } else if (timeoutObj instanceof String strVal && strVal.matches("\\d+")) {
+                timeoutMillis = Integer.parseInt(strVal);
+            } else {
+                throw new NodeExecutionException("❌ POST Request: 'timeout' must be an integer value.");
             }
 
             if (url == null || url == "" || headers == null) {
@@ -64,9 +72,13 @@ public class PostRequestService implements NodeExecutor {
             }
 
             return sendPostRequest(url, headers, body, timeoutMillis);
+
+        } catch (NodeExecutionException e) {
+            throw e;
+        
         } catch (Exception e) {
             log.error("POST Request execution failed in method execute()", e);
-            throw new NodeExecutionException("❌ POST Request execution failed: ", e);
+            throw new NodeExecutionException("❌ POST Request execution failed.");
         }
     }
 
@@ -88,10 +100,27 @@ public class PostRequestService implements NodeExecutor {
             HttpRequest request = requestBuilder.build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
+            int statusCode = response.statusCode();
+            if (statusCode < 200 || statusCode >= 300) {
+                throw new NodeExecutionException("❌ POST Request failed: HTTP " + statusCode + " — " + response.body());
+            }
+
             return mapper.readValue(response.body(), Object.class);
+
+        } catch (NodeExecutionException e) {
+            throw e; 
+
+        } catch (UnknownHostException e) {
+            throw new NodeExecutionException("❌ POST Request: Unknown host - " + e.getMessage());
+
+        } catch (ConnectException e) {
+            throw new NodeExecutionException("❌ POST Request: Connection refused - " + e.getMessage());
+
+        } catch (HttpTimeoutException e) {
+            throw new NodeExecutionException("❌ POST Request: Timeout exceeded.");
         } catch (Exception e) {
             log.error("POST Request execution failed", e);
-            throw new NodeExecutionException("❌ POST Request: ", e);
+            throw new NodeExecutionException("❌ POST Request: Unknown error.");
         }
     }
 }
