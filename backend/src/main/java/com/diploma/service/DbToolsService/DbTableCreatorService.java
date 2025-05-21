@@ -7,7 +7,11 @@ import com.diploma.utils.NodeType;
 import com.diploma.utils.SessionService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.diploma.exception.NodeExecutionException;
 import com.diploma.model.Node;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -21,6 +25,7 @@ import java.util.stream.Collectors;
 @NodeType("db_table_creator")
 public class DbTableCreatorService implements NodeExecutor {
 
+    private static final Logger log = LoggerFactory.getLogger(DbTableCreatorService.class);
     private final DatabaseConnectionPoolService connectionPoolService;
     private final FindNodeService findNodeService;
     private final SessionService sessionService;
@@ -34,6 +39,10 @@ public class DbTableCreatorService implements NodeExecutor {
 
     @Override
     public Object execute(Node node) throws Exception {
+        if (node.getInputs().isEmpty()) {
+            throw new NodeExecutionException("❌ DB Table Creator: Missing input node.");
+        }
+
         try {
             Node dataContainsNode = findNodeService.findNode(node, "db_connector");
             UUID sessionId = sessionService.getByNodeId(dataContainsNode.getNodeId()).getSessionId();
@@ -41,11 +50,16 @@ public class DbTableCreatorService implements NodeExecutor {
             String tableName = (String) node.getFields().get("tableName");
             Object rawColumns = node.getFields().get("columns");
 
+            if (tableName == null || tableName == "" || rawColumns == null || rawColumns == "") {
+                throw new NodeExecutionException("❌ DB Table Creator: Missing required fields.");
+            }
+
             List<Map<String, String>> columns = objectMapper.convertValue(rawColumns, new TypeReference<List<Map<String, String>>>() {});
             
             return createTable(sessionId.toString(), tableName, columns);
         } catch (Exception e) {
-            throw new Exception("Ошибка при выполнении execute() DB Table Creator: " + e.getMessage());
+            log.error("DB Table Creator execution failed in method execute()", e);
+            throw new NodeExecutionException("❌ DB Table Creator execution failed: ", e);
         }
     }
 
@@ -53,7 +67,7 @@ public class DbTableCreatorService implements NodeExecutor {
         try {
             Connection connection = connectionPoolService.getConnection(sessionId);
             if (connection == null) {
-                throw new IllegalArgumentException("Session not found: " + sessionId);
+                throw new NodeExecutionException("❌ DB Table Creator: Database connection not found");
             }
 
             String normalizedTableName = tableName.trim().toLowerCase().replaceAll("\\s+", "_");
@@ -70,7 +84,8 @@ public class DbTableCreatorService implements NodeExecutor {
 
             return Map.of("tableName", normalizedTableName);
         } catch (Exception e) {
-            throw new Exception("Ошибка при выполнении DB Table Creator: " + e.getMessage(), e);
+            log.error("DB Table Creator execution failed", e);
+            throw new NodeExecutionException("❌ DB Table Creator: ", e);
         }
     }
 }

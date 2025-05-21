@@ -1,5 +1,6 @@
 package com.diploma.service.DbToolsService;
 
+import com.diploma.exception.NodeExecutionException;
 import com.diploma.model.Node;
 import com.diploma.utils.DatabaseConnectionPoolService;
 import com.diploma.utils.FindNodeService;
@@ -7,6 +8,8 @@ import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
 import com.diploma.utils.SessionService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -21,6 +24,7 @@ import java.util.UUID;
 @NodeType("db_table_selector")
 public class DbTableSelectorService implements NodeExecutor {
 
+    private static final Logger log = LoggerFactory.getLogger(DbTableSelectorService.class);
     private final DatabaseConnectionPoolService connectionPoolService;
     private final FindNodeService findNodeService;
     private final SessionService sessionService;
@@ -34,7 +38,7 @@ public class DbTableSelectorService implements NodeExecutor {
     @Override
     public Object execute(Node node) throws Exception {
         if (node.getInputs().isEmpty()) {
-            throw new IllegalArgumentException("DB Table Selector требует хотя бы один input (nodeId)");
+            throw new NodeExecutionException("❌ DB Table Selector: Missing input node.");
         }
 
         try {
@@ -42,18 +46,23 @@ public class DbTableSelectorService implements NodeExecutor {
             UUID sessionId = sessionService.getByNodeId(dataContainsNode.getNodeId()).getSessionId();
             String tableName = (String) node.getFields().get("tableName");
 
+            if (tableName == null || tableName == "") {
+                throw new NodeExecutionException("❌ DB Table Selector: Missing required fields.");
+            }
+
             List<Map<String, String>> result = getTableColumns(sessionId.toString(), tableName);
             return Map.of("result", result);
 
         } catch (Exception e) {
-            throw new Exception("Ошибка при выполнении execute() DB Table Selector" + e.getMessage());
+            log.error("DB Table Selector execution failed in method execute()", e);
+            throw new NodeExecutionException("❌ DB Table Selector execution failed: ", e);
         }
     }
 
     public List<Map<String, String>> getTableColumns(String sessionId, String tableName) throws Exception {
         Connection connection = connectionPoolService.getConnection(sessionId);
         if (connection == null) {
-            throw new IllegalArgumentException("Invalid sessionId or connection not found");
+            throw new NodeExecutionException("❌ DB Table Selector: Database connection not found");
         }
 
         DatabaseMetaData metaData = connection.getMetaData();
@@ -66,7 +75,8 @@ public class DbTableSelectorService implements NodeExecutor {
                 columns.add(Map.of("columnName", columnName, "dataType", dataType));
             }
         } catch (Exception e) {
-            throw new Exception("Ошибка при выполнении DB Table Selector: " + e.getMessage());
+            log.error("DB Table Selector execution failed", e);
+            throw new NodeExecutionException("❌ DB Table Selector: ", e);
         }
 
         return columns;

@@ -1,6 +1,7 @@
 package com.diploma.service.DbToolsService;
 
 import com.diploma.dto.DbToolsDto.FilterCondition;
+import com.diploma.exception.NodeExecutionException;
 import com.diploma.model.Node;
 import com.diploma.utils.ColumnTypeService;
 import com.diploma.utils.DatabaseConnectionPoolService;
@@ -9,6 +10,8 @@ import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
 import com.diploma.utils.SessionService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -25,6 +28,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 @NodeType("db_row_filter")
 public class DbRowFilterService implements NodeExecutor {
 
+    private static final Logger log = LoggerFactory.getLogger(DbRowFilterService.class);
     private final DatabaseConnectionPoolService connectionPoolService;
     private final FindNodeService findNodeService;
     private final SessionService sessionService;
@@ -41,7 +45,7 @@ public class DbRowFilterService implements NodeExecutor {
     @Override
     public Object execute(Node node) throws Exception {
         if (node.getInputs().isEmpty()) {
-            throw new IllegalArgumentException("DB Row Filter требует хотя бы один input (nodeId)");
+            throw new NodeExecutionException("❌ DB Row Filter: Missing input nodes.");
         }
 
         try {
@@ -49,19 +53,24 @@ public class DbRowFilterService implements NodeExecutor {
             String tableName = (String) findNodeService.findNode(node, "db_table_selector").getFields().get("tableName");
             Object rawFilters = node.getFields().get("filters");
 
+            if (tableName == null || tableName == "" || rawFilters == null || rawFilters == "") {
+                throw new NodeExecutionException("❌ DB Row Filter: Missing required fields.");
+            }
+
             List<FilterCondition> filters = objectMapper.convertValue(rawFilters, new TypeReference<List<FilterCondition>>() {});
 
             return filter(sessionId.toString(), tableName, filters);
 
         } catch (Exception e) {
-            throw new Exception("Ошибка при выполнении execute() DB Row Filter: " + e.getMessage());
+            log.error("DB Row Filter execution failed in method execute()", e);
+            throw new NodeExecutionException("❌ DB Row Filter execution failed: ", e);
         }
     }
 
     public Map<String, Object> filter(String sessionId, String tableName, List<FilterCondition> filters) throws Exception {
         Connection connection = connectionPoolService.getConnection(sessionId);
         if (connection == null) {
-            throw new IllegalArgumentException("Invalid sessionId or connection not found");
+            throw new NodeExecutionException("❌ DB Row Filter: Database connection not found");
         }
 
         // Используем точное имя таблицы, не изменяя регистр
@@ -132,11 +141,12 @@ public class DbRowFilterService implements NodeExecutor {
 
             ResultSet rs = stmt.executeQuery();
             count = rs.next() ? rs.getInt(1) : 0;
-        } catch (Exception e) {
-            throw new Exception("Ошибка при выполнении DB Row Filter: " + e.getMessage(), e);
-        }
 
-        return Map.of("sqlCommand", userSql, "count", count);
+            return Map.of("sqlCommand", userSql, "count", count);
+        } catch (Exception e) {
+            log.error("DB Row Filter execution failed", e);
+            throw new NodeExecutionException("❌ DB Row Filter: ", e);
+        }
     }
 
 }

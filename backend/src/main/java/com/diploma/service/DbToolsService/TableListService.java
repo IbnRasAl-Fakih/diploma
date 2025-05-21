@@ -45,16 +45,12 @@ public class TableListService implements NodeExecutor {
             Node dataContainsNode = findNodeService.findNode(node, "db_connector");
             UUID sessionId = sessionService.getByNodeId(dataContainsNode.getNodeId()).getSessionId();
 
-            if (sessionId == null) {
-                throw new NodeExecutionException("❌ DB Table List: Database connection not found.");
-            }
-
             Map<String, Object> result = listTables(sessionId.toString());
             return result;
         } catch (NodeExecutionException e) {
             throw e;
         } catch (Exception e) {
-            log.error("Db Table List execution failed", e);
+            log.error("Db Table List execution failed in method execute()", e);
             throw new NodeExecutionException("❌ DB Table List: ", e);
         }
     }
@@ -62,7 +58,7 @@ public class TableListService implements NodeExecutor {
     public Map<String, Object> listTables(String sessionId) {
         Connection connection = connectionPoolService.getConnection(sessionId);
         if (connection == null) {
-            throw new NodeExecutionException("❌ DB Table List: session not found for sessionId = " + sessionId);
+            throw new NodeExecutionException("❌ DB Table List: Database connection not found");
         }
 
         List<Map<String, String>> tables = new ArrayList<>();
@@ -77,7 +73,7 @@ public class TableListService implements NodeExecutor {
 
             return Map.of("tables", tables);
         } catch (Exception e) {
-            throw new NodeExecutionException("❌ DB Table List: failed to retrieve table names", e);
+            throw new NodeExecutionException("❌ DB Table List: ", e);
         }
     }
 }

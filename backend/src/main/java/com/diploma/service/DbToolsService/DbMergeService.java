@@ -9,6 +9,8 @@ import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
 import com.diploma.utils.SessionService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -21,6 +23,7 @@ import java.util.UUID;
 @NodeType("db_merge")
 public class DbMergeService implements NodeExecutor {
 
+    private static final Logger log = LoggerFactory.getLogger(DbMergeService.class);
     private final DatabaseConnectionPoolService connectionPoolService;
     private final FindNodeService findNodeService;
     private final SessionService sessionService;
@@ -35,8 +38,8 @@ public class DbMergeService implements NodeExecutor {
 
     @Override
     public Object execute(Node node) throws Exception {
-        if (node.getInputs().isEmpty()) {
-            throw new IllegalArgumentException("DB Merge требует хотя бы один input (nodeId)");
+        if (node.getInputs().isEmpty() || node.getInputs().size() != 2) {
+            throw new NodeExecutionException("❌ DB Merge: Missing input nodes.");
         }
 
         try {
@@ -44,23 +47,28 @@ public class DbMergeService implements NodeExecutor {
             UUID sessionId = sessionService.getByNodeId(dataContainsNode.getNodeId()).getSessionId();
             String tableName = (String) node.getFields().get("tableName");
 
+            if (tableName == null || tableName == "") {
+                throw new NodeExecutionException("❌ DB Merge: Missing required fields.");
+            }
+
             UUID inputNodeId = node.getInputs().get(1).getNodeId();
             List<Map<String, Object>> body = resultService.getDataFromNode(inputNodeId);
 
+            if (body == null) {
+                throw new NodeExecutionException("❌ DB Merge: Failed to get the result of the previous node.");
+            }
+
             return merge(sessionId.toString(), tableName, body);
         } catch (Exception e) {
-            throw new Exception("Ошибка при выполнении execute() DB Merge" + e.getMessage());
+            log.error("DB Merge execution failed in method execute()", e);
+            throw new NodeExecutionException("❌ DB Merge execution failed: ", e);
         }
     }
 
     public Map<String, String> merge(String sessionId, String tableName, List<Map<String, Object>> body) throws Exception {
         Connection connection = connectionPoolService.getConnection(sessionId);
         if (connection == null) {
-            throw new IllegalArgumentException("Invalid sessionId or connection not found");
-        }
-
-        if (body == null || body.isEmpty()) {
-            throw new IllegalArgumentException("Request body is empty");
+            throw new NodeExecutionException("❌ DB Merge: Database connection not found");
         }
 
         try (Statement stmt = connection.createStatement()) {
@@ -82,19 +90,16 @@ public class DbMergeService implements NodeExecutor {
             }
 
             return Map.of("message", "✅ Data written successfully");
-        } catch (IllegalArgumentException e) {
-            throw new NodeExecutionException("Invalid input: JSON structure is not supported or contains unexpected values.", e);
         } catch (Exception e) {
-            throw new Exception("❌ Ошибка при выполнении DB Merge: " + e.getMessage(), e);
+            log.error("DB Merge execution failed", e);
+            throw new NodeExecutionException("❌ DB Merge: ", e);
         }
     }
 
     private String buildWhereClause(Map<String, Object> row) {
-        // Простейшая эвристика: первичный ключ называется id
         if (row.containsKey("id")) {
             return "id = '" + row.get("id").toString().replace("'", "''") + "'";
         } else {
-            // если нет id, берем все поля
             return row.entrySet().stream()
                     .map(e -> e.getKey() + " = '" + e.getValue().toString().replace("'", "''") + "'")
                     .reduce((a, b) -> a + " AND " + b)

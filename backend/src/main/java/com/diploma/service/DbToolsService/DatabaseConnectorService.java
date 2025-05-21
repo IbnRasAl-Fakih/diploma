@@ -43,7 +43,7 @@ public class DatabaseConnectorService implements NodeExecutor{
         } catch (NodeExecutionException e) {
             throw e;
         } catch (Exception e) {
-            log.error("DB Connector execution failed", e);
+            log.error("DB Connector execution failed in method execute()", e);
             throw new NodeExecutionException("❌ DB Connector: ", e);
         }
     }
@@ -65,7 +65,7 @@ public class DatabaseConnectorService implements NodeExecutor{
             throw new NodeExecutionException("❌ DB Connector: Failed to connect to database - " + e.getMessage(), e);
 
         } catch (Exception e) {
-            throw new NodeExecutionException("❌ Unexpected error in DB Connector", e);
+            throw new NodeExecutionException("❌ DB Connector: ", e);
         }
     }
 }

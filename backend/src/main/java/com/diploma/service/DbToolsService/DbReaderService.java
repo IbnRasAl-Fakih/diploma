@@ -1,7 +1,10 @@
 package com.diploma.service.DbToolsService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.diploma.exception.NodeExecutionException;
 import com.diploma.model.Node;
 import com.diploma.service.ResultService;
 import com.diploma.utils.DatabaseConnectionPoolService;
@@ -23,6 +26,7 @@ import java.util.UUID;
 @NodeType("db_reader")
 public class DbReaderService implements NodeExecutor {
 
+    private static final Logger log = LoggerFactory.getLogger(DbReaderService.class);
     private final DatabaseConnectionPoolService connectionPoolService;
     private final FindNodeService findNodeService;
     private final SessionService sessionService;
@@ -38,7 +42,7 @@ public class DbReaderService implements NodeExecutor {
     @Override
     public Object execute(Node node) throws Exception {
         if (node.getInputs().isEmpty()) {
-            throw new IllegalArgumentException("DB Reader требует хотя бы один input (nodeId)");
+            throw new NodeExecutionException("❌ DB Reader: Missing input node.");
         }
 
         try {
@@ -49,14 +53,15 @@ public class DbReaderService implements NodeExecutor {
             String statementQuery = data.get(0).get("sqlCommand").toString();
 
             if (statementQuery == null || statementQuery.isBlank()) {
-                throw new IllegalArgumentException("Поле 'statementQuery' не должно быть пустым");
+                throw new NodeExecutionException("❌ DB Rader: Failed to get the result of the previous node.");
             }
 
             List<Map<String, Object>> result = executeQuery(sessionId.toString(), statementQuery);
             return Map.of("result", result);
 
         } catch (Exception e) {
-            throw new Exception("Ошибка при выполнении execute() DB Reader: " + e.getMessage());
+            log.error("DB Reader execution failed in method execute()", e);
+            throw new NodeExecutionException("❌ DB Reader execution failed: ", e);
         }
     }
 
@@ -66,6 +71,10 @@ public class DbReaderService implements NodeExecutor {
 
         try {
             Connection connection = connectionPoolService.getConnection(sessionId);
+            if (connection == null) {
+                throw new NodeExecutionException("❌ DB Reader: Database connection not found");
+            }
+
             statement = connection.createStatement();
 
             boolean hasResultSet = statement.execute(statementQuery);
@@ -91,8 +100,8 @@ public class DbReaderService implements NodeExecutor {
 
             return new ArrayList<>();
         } catch (Exception e) {
-            System.out.println(e);
-            throw new Exception("Ошибка при выполнении DB Reader: " + e.getMessage());
+            log.error("DB Reader execution failed", e);
+            throw new NodeExecutionException("❌ DB Reader: ", e);
         } finally {
             if (resultSet != null) resultSet.close();
             if (statement != null) statement.close();

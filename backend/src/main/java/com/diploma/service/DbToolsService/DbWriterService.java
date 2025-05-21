@@ -1,5 +1,6 @@
 package com.diploma.service.DbToolsService;
 
+import com.diploma.exception.NodeExecutionException;
 import com.diploma.model.Node;
 import com.diploma.service.ResultService;
 import com.diploma.utils.DatabaseConnectionPoolService;
@@ -8,6 +9,8 @@ import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
 import com.diploma.utils.SessionService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -21,6 +24,7 @@ import java.util.stream.Collectors;
 @NodeType("db_writer")
 public class DbWriterService implements NodeExecutor {
 
+    private static final Logger log = LoggerFactory.getLogger(DbWriterService.class);
     private final DatabaseConnectionPoolService connectionPoolService;
     private final FindNodeService findNodeService;
     private final SessionService sessionService;
@@ -35,8 +39,8 @@ public class DbWriterService implements NodeExecutor {
 
     @Override
     public Object execute(Node node) throws Exception {
-        if (node.getInputs().isEmpty()) {
-            throw new IllegalArgumentException("DB Writer требует хотя бы один input (nodeId)");
+        if (node.getInputs().isEmpty() || node.getInputs().size() != 2) {
+            throw new NodeExecutionException("❌ DB Writer: Missing input nodes.");
         }
 
         try {
@@ -44,23 +48,28 @@ public class DbWriterService implements NodeExecutor {
             UUID sessionId = sessionService.getByNodeId(dataContainsNode.getNodeId()).getSessionId();
             String tableName = (String) node.getFields().get("tableName");
 
+            if (tableName == null || tableName == "") {
+                throw new NodeExecutionException("❌ DB Writer: Missing required fields.");
+            }
+
             UUID inputNodeId = node.getInputs().get(1).getNodeId();
             List<Map<String, Object>> body = resultService.getDataFromNode(inputNodeId);
 
+            if (body == null) {
+                throw new NodeExecutionException("❌ DB Writer: Failed to get the result of the previous node.");
+            }
+
             return write(sessionId.toString(), tableName, body);
         } catch (Exception e) {
-            throw new Exception("Ошибка при выполнении execute() DB Writer" + e.getMessage());
+            log.error("DB Writer execution failed in method execute()", e);
+            throw new NodeExecutionException("❌ DB Writer execution failed: ", e);
         }
     }
 
     public Map<String, String> write(String sessionId, String tableName, List<Map<String, Object>> body) throws Exception {
         Connection connection = connectionPoolService.getConnection(sessionId);
         if (connection == null) {
-            throw new IllegalArgumentException("Invalid sessionId or connection not found");
-        }
-
-        if (body == null || body.isEmpty()) {
-            throw new IllegalArgumentException("Request body is empty");
+            throw new NodeExecutionException("❌ DB Writer: Database connection not found");
         }
 
         try (Statement stmt = connection.createStatement()) {
@@ -81,7 +90,8 @@ public class DbWriterService implements NodeExecutor {
 
             return Map.of("message", "✅ Data written successfully: " + body.size() + " rows.");
         } catch (Exception e) {
-            throw new Exception("Ошибка при выполнении DB Writer: " + e.getMessage(), e);
+            log.error("DB Writer execution failed", e);
+            throw new NodeExecutionException("❌ DB Writer: ", e);
         }
     }
 }

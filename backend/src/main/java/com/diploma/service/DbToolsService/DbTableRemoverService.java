@@ -1,5 +1,6 @@
 package com.diploma.service.DbToolsService;
 
+import com.diploma.exception.NodeExecutionException;
 import com.diploma.model.Node;
 import com.diploma.utils.DatabaseConnectionPoolService;
 import com.diploma.utils.FindNodeService;
@@ -7,6 +8,8 @@ import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
 import com.diploma.utils.SessionService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -18,6 +21,7 @@ import java.util.UUID;
 @NodeType("db_table_remover")
 public class DbTableRemoverService implements NodeExecutor {
 
+    private static final Logger log = LoggerFactory.getLogger(DbTableRemoverService.class);
     private final DatabaseConnectionPoolService connectionPoolService;
     private final FindNodeService findNodeService;
     private final SessionService sessionService;
@@ -31,7 +35,7 @@ public class DbTableRemoverService implements NodeExecutor {
     @Override
     public Object execute(Node node) throws Exception {
         if (node.getInputs().isEmpty()) {
-            throw new IllegalArgumentException("DB Table Remover требует хотя бы один input (nodeId)");
+            throw new NodeExecutionException("❌ DB Table Remover: Missing input node.");
         }
 
         try {
@@ -40,9 +44,14 @@ public class DbTableRemoverService implements NodeExecutor {
 
             String tableName = (String) node.getFields().get("tableName");
             
+            if (tableName == null || tableName == "") {
+                throw new NodeExecutionException("❌ DB Table Remover: Missing required fields.");
+            }
+
             return removeTable(sessionId.toString(), tableName);
         } catch (Exception e) {
-            throw new Exception("Ошибка при выполнении execute() DB Table Remover: " + e.getMessage());
+            log.error("DB Table Remover execution failed in method execute()", e);
+            throw new NodeExecutionException("❌ DB Table Remover execution failed: ", e);
         }
     }
 
@@ -50,7 +59,7 @@ public class DbTableRemoverService implements NodeExecutor {
         try {
             Connection connection = connectionPoolService.getConnection(sessionId);
             if (connection == null) {
-                throw new IllegalArgumentException("Session not found: " + sessionId);
+                throw new NodeExecutionException("❌ DB Table Remover: Database connection not found");
             }
 
             String sql = "DROP TABLE IF EXISTS " + tableName;
@@ -60,7 +69,8 @@ public class DbTableRemoverService implements NodeExecutor {
 
             return Map.of("message", "Table deleted successfully!");
         } catch (Exception e) {
-            throw new Exception("Ошибка при выполнении DB Table Remover: " + e.getMessage(), e);
+            log.error("DB Table Remover execution failed", e);
+            throw new NodeExecutionException("❌ DB Table Remover: ", e);
         }
     }
 }
