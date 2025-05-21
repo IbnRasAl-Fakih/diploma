@@ -1,10 +1,14 @@
 package com.diploma.service.HttpService;
 
+import com.diploma.exception.NodeExecutionException;
 import com.diploma.model.Node;
 import com.diploma.service.ResultService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -21,6 +25,7 @@ import java.util.UUID;
 @NodeType("put_request")
 public class PutRequestService implements NodeExecutor {
 
+    private static final Logger log = LoggerFactory.getLogger(PutRequestService.class);
     private final ResultService resultService;
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -32,12 +37,16 @@ public class PutRequestService implements NodeExecutor {
     public Object execute(Node node) throws Exception {
 
         if (node.getInputs().isEmpty()) {
-            throw new IllegalArgumentException("PUT Request требует хотя бы один input (nodeId)");
+            throw new NodeExecutionException("❌ PUT Request: Missing input nodes.");
         }
 
         try {
             UUID inputNodeId = node.getInputs().get(0).getNodeId();
             List<Map<String, Object>> body = resultService.getDataFromNode(inputNodeId);
+
+            if (body == null) {
+                throw new NodeExecutionException("❌ PUT Request: Failed to get the result of the previous node.");
+            }
 
             String url = (String) node.getFields().get("url");
 
@@ -46,9 +55,18 @@ public class PutRequestService implements NodeExecutor {
 
             int timeoutMillis = (Integer) node.getFields().get("timeout");
 
+            if (timeoutMillis < 3000) {
+                timeoutMillis = 3000;
+            }
+
+            if (url == null || url == "" || headers == null) {
+                throw new NodeExecutionException("❌ PUT Request: Missing required fields.");
+            }
+
             return sendPutRequest(url, headers, body, timeoutMillis);
         } catch (Exception e) {
-            throw new Exception("Ошибка при выполнении execute() PUT Request: " + e.getMessage());
+            log.error("PUT Request execution failed in method execute()", e);
+            throw new NodeExecutionException("❌ PUT Request execution failed: ", e);
         }
     }
 
@@ -74,7 +92,8 @@ public class PutRequestService implements NodeExecutor {
 
             return mapper.readValue(response.body(), Object.class);
         } catch (Exception e) {
-            throw new Exception("Ошибка при выполнении PUT Request: " + e.getMessage());
+            log.error("PUT Request execution failed", e);
+            throw new NodeExecutionException("❌ PUT Request: ", e);
         }
     }
 }

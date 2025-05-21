@@ -148,5 +148,4 @@ public class DbRowFilterService implements NodeExecutor {
             throw new NodeExecutionException("❌ DB Row Filter: ", e);
         }
     }
-
 }

@@ -1,10 +1,14 @@
 package com.diploma.service.HttpService;
 
+import com.diploma.exception.NodeExecutionException;
 import com.diploma.model.Node;
 import com.diploma.service.ResultService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -21,6 +25,7 @@ import java.util.UUID;
 @NodeType("patch_request")
 public class PatchRequestService implements NodeExecutor {
 
+    private static final Logger log = LoggerFactory.getLogger(PatchRequestService.class);
     private final ResultService resultService;
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -32,12 +37,16 @@ public class PatchRequestService implements NodeExecutor {
     public Object execute(Node node) throws Exception {
 
         if (node.getInputs().isEmpty()) {
-            throw new IllegalArgumentException("PATCH Request требует хотя бы один input (nodeId)");
+            throw new NodeExecutionException("❌ PATCH Request: Missing input nodes.");
         }
 
         try {
             UUID inputNodeId = node.getInputs().get(0).getNodeId();
             List<Map<String, Object>> body = resultService.getDataFromNode(inputNodeId);
+
+            if (body == null) {
+                throw new NodeExecutionException("❌ PATCH Request: Failed to get the result of the previous node.");
+            }
 
             String url = (String) node.getFields().get("url");
 
@@ -46,9 +55,18 @@ public class PatchRequestService implements NodeExecutor {
 
             int timeoutMillis = (Integer) node.getFields().get("timeout");
 
+            if (timeoutMillis < 3000) {
+                timeoutMillis = 3000;
+            }
+
+            if (url == null || url == "" || headers == null) {
+                throw new NodeExecutionException("❌ PATCH Request: Missing required fields.");
+            }
+
             return sendPatchRequest(url, headers, body, timeoutMillis);
         } catch (Exception e) {
-            throw new Exception("Ошибка при выполнении execute() PATCH Request: " + e.getMessage());
+            log.error("PATCH Request execution failed in method execute()", e);
+            throw new NodeExecutionException("❌ PATCH Request execution failed: ", e);
         }
     }
 
@@ -74,7 +92,8 @@ public class PatchRequestService implements NodeExecutor {
 
             return mapper.readValue(response.body(), Object.class);
         } catch (Exception e) {
-            throw new Exception("Ошибка при выполнении PATCH Request: " + e.getMessage());
+            log.error("PATCH Request execution failed", e);
+            throw new NodeExecutionException("❌ PATCH Request: ", e);
         }
     }
 }

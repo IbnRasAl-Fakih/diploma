@@ -3,24 +3,15 @@
     "nodes": [
         {
             "node_id": "92256aea-abf5-4ac7-922b-73b9d53e384b",
-            "type": "db_query_reader",
-            "inputs": ["ca2cf5d7-5047-4e1f-a3f2-0964c95a3fa9"],
-            "outputs": [],
-            "fields": {
-                "statementQuery": "select * from task_logs_noco_db"
-            }
-        },
-        {
-            "node_id": "ca2cf5d7-5047-4e1f-a3f2-0964c95a3fa9",
-            "type": "db_connector",
+            "type": "get_request",
             "inputs": [],
             "outputs": [],
             "fields": {
-                "databaseType": "PostgreSQL",
-                "url": "jdbc:postgresql://localhost:5432/postgres",
-                "username": "postgres",
-                "password": "qwerty123",
-                "driver": "org.postgresql.Driver"
+                "url": "https://app.nocodb.com/api/v2/tables/mqev0lgbfolp1if/records",
+                "headers": {
+                    "xc-token": "H6ZnhaEL5XLrVmID1jwWGgp5xAeMKwD0NJF706pF"
+                },
+                "timeout": 10000
             }
         }
 	]
