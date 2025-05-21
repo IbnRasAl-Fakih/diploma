@@ -13,6 +13,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.SQLInvalidAuthorizationSpecException;
+import java.sql.SQLSyntaxErrorException;
+import java.sql.SQLTimeoutException;
 import java.sql.Statement;
 import java.util.Map;
 import java.util.UUID;
@@ -49,9 +54,13 @@ public class DbTableRemoverService implements NodeExecutor {
             }
 
             return removeTable(sessionId.toString(), tableName);
+
+        } catch (NodeExecutionException e) {
+            throw e;
+
         } catch (Exception e) {
             log.error("DB Table Remover execution failed in method execute()", e);
-            throw new NodeExecutionException("❌ DB Table Remover execution failed: ", e);
+            throw new NodeExecutionException("❌ DB Table Remover execution failed.");
         }
     }
 
@@ -59,7 +68,7 @@ public class DbTableRemoverService implements NodeExecutor {
         try {
             Connection connection = connectionPoolService.getConnection(sessionId);
             if (connection == null) {
-                throw new NodeExecutionException("❌ DB Table Remover: Database connection not found");
+                throw new NodeExecutionException("❌ DB Table Remover: Database connection not found.");
             }
 
             String sql = "DROP TABLE IF EXISTS " + tableName;
@@ -68,9 +77,25 @@ public class DbTableRemoverService implements NodeExecutor {
             stmt.executeUpdate(sql);
 
             return Map.of("message", "Table deleted successfully!");
+
+        } catch (NodeExecutionException e) {
+            throw e;
+
+        } catch (SQLSyntaxErrorException e) {
+            throw new NodeExecutionException("❌ DB Table Remover: Invalid SQL syntax – " + e.getMessage());
+
+        } catch (SQLIntegrityConstraintViolationException e) {
+            throw new NodeExecutionException("❌ DB Table Remover: Constraint violation – " + e.getMessage());
+
+        } catch (SQLTimeoutException e) {
+            throw new NodeExecutionException("❌ DB Table Remover: Timeout occurred.");
+
+        } catch (SQLException e) {
+            throw new NodeExecutionException("❌ DB Table Remover: SQL Error – " + e.getMessage());
+
         } catch (Exception e) {
             log.error("DB Table Remover execution failed", e);
-            throw new NodeExecutionException("❌ DB Table Remover: ", e);
+            throw new NodeExecutionException("❌ DB Table Remover: Unknown error.");
         }
     }
 }

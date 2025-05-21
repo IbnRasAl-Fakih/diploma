@@ -15,6 +15,10 @@ import org.springframework.stereotype.Service;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLNonTransientConnectionException;
+import java.sql.SQLSyntaxErrorException;
+import java.sql.SQLTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -53,16 +57,19 @@ public class DbTableSelectorService implements NodeExecutor {
             List<Map<String, String>> result = getTableColumns(sessionId.toString(), tableName);
             return Map.of("result", result);
 
+        } catch (NodeExecutionException e) {
+            throw e;
+
         } catch (Exception e) {
             log.error("DB Table Selector execution failed in method execute()", e);
-            throw new NodeExecutionException("❌ DB Table Selector execution failed: ", e);
+            throw new NodeExecutionException("❌ DB Table Selector execution failed.");
         }
     }
 
     public List<Map<String, String>> getTableColumns(String sessionId, String tableName) throws Exception {
         Connection connection = connectionPoolService.getConnection(sessionId);
         if (connection == null) {
-            throw new NodeExecutionException("❌ DB Table Selector: Database connection not found");
+            throw new NodeExecutionException("❌ DB Table Selector: Database connection not found.");
         }
 
         DatabaseMetaData metaData = connection.getMetaData();
@@ -74,11 +81,27 @@ public class DbTableSelectorService implements NodeExecutor {
                 String dataType = rs.getString("TYPE_NAME");
                 columns.add(Map.of("columnName", columnName, "dataType", dataType));
             }
-        } catch (Exception e) {
-            log.error("DB Table Selector execution failed", e);
-            throw new NodeExecutionException("❌ DB Table Selector: ", e);
-        }
 
         return columns;
+
+        } catch (NodeExecutionException e) {
+            throw e;
+
+        } catch (SQLTimeoutException e) {
+            throw new NodeExecutionException("❌ DB Table Selector: Timeout during column metadata retrieval.");
+
+        } catch (SQLNonTransientConnectionException e) {
+            throw new NodeExecutionException("❌ DB Table Selector: Lost connection – " + e.getMessage());
+
+        } catch (SQLSyntaxErrorException e) {
+            throw new NodeExecutionException("❌ DB Table Selector: Invalid table name – " + e.getMessage());
+
+        } catch (SQLException e) {
+            throw new NodeExecutionException("❌ DB Table Selector: SQL error – " + e.getMessage());
+
+        } catch (Exception e) {
+            log.error("DB Table Selector execution failed", e);
+            throw new NodeExecutionException("❌ DB Table Selector: Unknown error.");
+        }
     }
 }

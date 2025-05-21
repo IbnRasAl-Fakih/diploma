@@ -15,6 +15,12 @@ import com.diploma.utils.FindNodeService;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLDataException;
+import java.sql.SQLException;
+import java.sql.SQLInvalidAuthorizationSpecException;
+import java.sql.SQLNonTransientConnectionException;
+import java.sql.SQLSyntaxErrorException;
+import java.sql.SQLTimeoutException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,9 +65,12 @@ public class DbReaderService implements NodeExecutor {
             List<Map<String, Object>> result = executeQuery(sessionId.toString(), statementQuery);
             return Map.of("result", result);
 
+        } catch (NodeExecutionException e) {
+            throw e;
+
         } catch (Exception e) {
             log.error("DB Reader execution failed in method execute()", e);
-            throw new NodeExecutionException("❌ DB Reader execution failed: ", e);
+            throw new NodeExecutionException("❌ DB Reader execution failed.");
         }
     }
 
@@ -72,7 +81,7 @@ public class DbReaderService implements NodeExecutor {
         try {
             Connection connection = connectionPoolService.getConnection(sessionId);
             if (connection == null) {
-                throw new NodeExecutionException("❌ DB Reader: Database connection not found");
+                throw new NodeExecutionException("❌ DB Reader: Database connection not found.");
             }
 
             statement = connection.createStatement();
@@ -99,9 +108,28 @@ public class DbReaderService implements NodeExecutor {
             }
 
             return new ArrayList<>();
+
+        } catch (NodeExecutionException e) {
+            throw e;
+
+        } catch (SQLSyntaxErrorException e) {
+            throw new NodeExecutionException("❌ DB Reader: Invalid SQL syntax – " + e.getMessage());
+
+        } catch (SQLTimeoutException e) {
+            throw new NodeExecutionException("❌ DB Reader: Query timed out.");
+
+        } catch (SQLNonTransientConnectionException e) {
+            throw new NodeExecutionException("❌ DB Reader: Connection lost – " + e.getMessage());
+
+        } catch (SQLDataException e) {
+            throw new NodeExecutionException("❌ DB Reader: Data type mismatch – " + e.getMessage());
+
+        } catch (SQLException e) {
+            throw new NodeExecutionException("❌ DB Reader: SQL error – " + e.getMessage());
+        
         } catch (Exception e) {
             log.error("DB Reader execution failed", e);
-            throw new NodeExecutionException("❌ DB Reader: ", e);
+            throw new NodeExecutionException("❌ DB Reader: Unknown error.");
         } finally {
             if (resultSet != null) resultSet.close();
             if (statement != null) statement.close();

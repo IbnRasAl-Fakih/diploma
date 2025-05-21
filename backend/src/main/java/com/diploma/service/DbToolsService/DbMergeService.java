@@ -14,6 +14,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
+import java.sql.SQLDataException;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.SQLInvalidAuthorizationSpecException;
+import java.sql.SQLNonTransientConnectionException;
+import java.sql.SQLSyntaxErrorException;
+import java.sql.SQLTimeoutException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
@@ -59,16 +66,20 @@ public class DbMergeService implements NodeExecutor {
             }
 
             return merge(sessionId.toString(), tableName, body);
+
+        } catch (NodeExecutionException e) {
+            throw e;
+
         } catch (Exception e) {
             log.error("DB Merge execution failed in method execute()", e);
-            throw new NodeExecutionException("❌ DB Merge execution failed: ", e);
+            throw new NodeExecutionException("❌ DB Merge execution failed.");
         }
     }
 
     public Map<String, String> merge(String sessionId, String tableName, List<Map<String, Object>> body) throws Exception {
         Connection connection = connectionPoolService.getConnection(sessionId);
         if (connection == null) {
-            throw new NodeExecutionException("❌ DB Merge: Database connection not found");
+            throw new NodeExecutionException("❌ DB Merge: Database connection not found.");
         }
 
         try (Statement stmt = connection.createStatement()) {
@@ -89,10 +100,32 @@ public class DbMergeService implements NodeExecutor {
                 }
             }
 
-            return Map.of("message", "✅ Data written successfully");
+            return Map.of("message", "✅ Data written successfully!");
+
+        } catch (NodeExecutionException e) {
+            throw e;
+
+        } catch (SQLSyntaxErrorException e) {
+            throw new NodeExecutionException("❌ DB Merge: Invalid SQL syntax – " + e.getMessage());
+
+        } catch (SQLIntegrityConstraintViolationException e) {
+            throw new NodeExecutionException("❌ DB Merge: Integrity constraint violation – " + e.getMessage());
+
+        } catch (SQLDataException e) {
+            throw new NodeExecutionException("❌ DB Merge: Data type mismatch – " + e.getMessage());
+
+        } catch (SQLTimeoutException e) {
+            throw new NodeExecutionException("❌ DB Merge: Timeout occurred during operation.");
+
+        } catch (SQLNonTransientConnectionException e) {
+            throw new NodeExecutionException("❌ DB Merge: Lost database connection – " + e.getMessage());
+
+        } catch (SQLException e) {
+            throw new NodeExecutionException("❌ DB Merge: SQL error – " + e.getMessage());
+
         } catch (Exception e) {
             log.error("DB Merge execution failed", e);
-            throw new NodeExecutionException("❌ DB Merge: ", e);
+            throw new NodeExecutionException("❌ DB Merge: Unknown error.");
         }
     }
 

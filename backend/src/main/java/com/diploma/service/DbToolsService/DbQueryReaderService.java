@@ -14,6 +14,9 @@ import com.diploma.utils.FindNodeService;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLSyntaxErrorException;
+import java.sql.SQLTimeoutException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -55,9 +58,12 @@ public class DbQueryReaderService implements NodeExecutor {
             List<Map<String, Object>> result = executeQuery(sessionId.toString(), statementQuery);
             return Map.of("result", result);
 
+        } catch (NodeExecutionException e) {
+            throw e;
+
         } catch (Exception e) {
             log.error("DB Query Reader execution failed in method execute()", e);
-            throw new NodeExecutionException("❌ DB Query Reader execution failed: ", e);
+            throw new NodeExecutionException("❌ DB Query Reader execution failed.");
         }
     }
 
@@ -68,7 +74,7 @@ public class DbQueryReaderService implements NodeExecutor {
         try {
             Connection connection = connectionPoolService.getConnection(sessionId);
             if (connection == null) {
-                throw new NodeExecutionException("❌ DB Query Reader: Database connection not found");
+                throw new NodeExecutionException("❌ DB Query Reader: Database connection not found.");
             }
 
             statement = connection.createStatement();
@@ -95,9 +101,22 @@ public class DbQueryReaderService implements NodeExecutor {
             }
 
             return new ArrayList<>();
+
+        } catch (NodeExecutionException e) {
+            throw e;
+
+        } catch (SQLSyntaxErrorException e) {
+            throw new NodeExecutionException("❌ DB Query Reader: Invalid SQL syntax – " + e.getMessage());
+
+        } catch (SQLTimeoutException e) {
+            throw new NodeExecutionException("❌ DB Query Reader: Query timed out.");
+
+        } catch (SQLException e) {
+            throw new NodeExecutionException("❌ DB Query Reader: SQL Error – " + e.getMessage());
+
         } catch (Exception e) {
             log.error("DB Query Reader execution failed", e);
-            throw new NodeExecutionException("❌ DB Query Reader: ", e);
+            throw new NodeExecutionException("❌ DB Query Reader: Unknown error.");
         } finally {
             if (resultSet != null) resultSet.close();
             if (statement != null) statement.close();

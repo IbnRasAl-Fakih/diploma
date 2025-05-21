@@ -40,11 +40,13 @@ public class DatabaseConnectorService implements NodeExecutor{
             }
 
             return connect(url, username, password, driver);
+            
         } catch (NodeExecutionException e) {
             throw e;
+
         } catch (Exception e) {
             log.error("DB Connector execution failed in method execute()", e);
-            throw new NodeExecutionException("❌ DB Connector: ", e);
+            throw new NodeExecutionException("❌ DB Connector execution failed.");
         }
     }
 
@@ -59,13 +61,14 @@ public class DatabaseConnectorService implements NodeExecutor{
             return Map.of("sessionId", sessionId);
 
         } catch (ClassNotFoundException e) {
-            throw new NodeExecutionException("❌ DB Connector: JDBC Driver not found - " + driver, e);
+            throw new NodeExecutionException("❌ DB Connector: JDBC Driver not found - " + driver);
 
         } catch (SQLException e) {
-            throw new NodeExecutionException("❌ DB Connector: Failed to connect to database - " + e.getMessage(), e);
+            throw new NodeExecutionException("❌ DB Connector: Failed to connect to database - " + e.getMessage());
 
         } catch (Exception e) {
-            throw new NodeExecutionException("❌ DB Connector: ", e);
+            log.error("DB Connector execution failed", e);
+            throw new NodeExecutionException("❌ DB Connector: Unknown error.");
         }
     }
 }

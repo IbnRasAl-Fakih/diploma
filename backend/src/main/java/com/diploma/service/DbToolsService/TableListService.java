@@ -15,6 +15,10 @@ import com.diploma.utils.SessionService;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLInvalidAuthorizationSpecException;
+import java.sql.SQLNonTransientConnectionException;
+import java.sql.SQLTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,18 +51,20 @@ public class TableListService implements NodeExecutor {
 
             Map<String, Object> result = listTables(sessionId.toString());
             return result;
+            
         } catch (NodeExecutionException e) {
             throw e;
+
         } catch (Exception e) {
             log.error("Db Table List execution failed in method execute()", e);
-            throw new NodeExecutionException("❌ DB Table List: ", e);
+            throw new NodeExecutionException("❌ DB Table List execution failed.");
         }
     }
 
     public Map<String, Object> listTables(String sessionId) {
         Connection connection = connectionPoolService.getConnection(sessionId);
         if (connection == null) {
-            throw new NodeExecutionException("❌ DB Table List: Database connection not found");
+            throw new NodeExecutionException("❌ DB Table List: Database connection not found.");
         }
 
         List<Map<String, String>> tables = new ArrayList<>();
@@ -72,8 +78,22 @@ public class TableListService implements NodeExecutor {
             }
 
             return Map.of("tables", tables);
+
+        } catch (NodeExecutionException e) {
+            throw e;
+
+        } catch (SQLTimeoutException e) {
+            throw new NodeExecutionException("❌ DB Table List: Metadata query timed out.");
+
+        } catch (SQLNonTransientConnectionException e) {
+            throw new NodeExecutionException("❌ DB Table List: Connection lost – " + e.getMessage());
+
+        } catch (SQLException e) {
+            throw new NodeExecutionException("❌ DB Table List: SQL Error – " + e.getMessage());
+
         } catch (Exception e) {
-            throw new NodeExecutionException("❌ DB Table List: ", e);
+            log.error("DB Table List execution failed", e);
+            throw new NodeExecutionException("❌ DB Table List: Unknown error.");
         }
     }
 }

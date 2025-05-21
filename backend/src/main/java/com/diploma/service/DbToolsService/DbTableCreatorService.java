@@ -15,6 +15,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.SQLInvalidAuthorizationSpecException;
+import java.sql.SQLSyntaxErrorException;
+import java.sql.SQLTimeoutException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
@@ -57,9 +62,13 @@ public class DbTableCreatorService implements NodeExecutor {
             List<Map<String, String>> columns = objectMapper.convertValue(rawColumns, new TypeReference<List<Map<String, String>>>() {});
             
             return createTable(sessionId.toString(), tableName, columns);
+
+        } catch (NodeExecutionException e) {
+            throw e;
+
         } catch (Exception e) {
             log.error("DB Table Creator execution failed in method execute()", e);
-            throw new NodeExecutionException("❌ DB Table Creator execution failed: ", e);
+            throw new NodeExecutionException("❌ DB Table Creator execution failed.");
         }
     }
 
@@ -67,7 +76,7 @@ public class DbTableCreatorService implements NodeExecutor {
         try {
             Connection connection = connectionPoolService.getConnection(sessionId);
             if (connection == null) {
-                throw new NodeExecutionException("❌ DB Table Creator: Database connection not found");
+                throw new NodeExecutionException("❌ DB Table Creator: Database connection not found.");
             }
 
             String normalizedTableName = tableName.trim().toLowerCase().replaceAll("\\s+", "_");
@@ -83,9 +92,25 @@ public class DbTableCreatorService implements NodeExecutor {
             }
 
             return Map.of("tableName", normalizedTableName);
+
+        } catch (NodeExecutionException e) {
+            throw e;
+
+        } catch (SQLSyntaxErrorException e) {
+            throw new NodeExecutionException("❌ DB Table Creator: Invalid SQL syntax – " + e.getMessage());
+
+        } catch (SQLIntegrityConstraintViolationException e) {
+            throw new NodeExecutionException("❌ DB Table Creator: Integrity constraint violation – " + e.getMessage());
+
+        } catch (SQLTimeoutException e) {
+            throw new NodeExecutionException("❌ DB Table Creator: Timeout during table creation.");
+
+        } catch (SQLException e) {
+            throw new NodeExecutionException("❌ DB Table Creator: SQL error – " + e.getMessage());
+
         } catch (Exception e) {
             log.error("DB Table Creator execution failed", e);
-            throw new NodeExecutionException("❌ DB Table Creator: ", e);
+            throw new NodeExecutionException("❌ DB Table Creator: Unknown error.");
         }
     }
 }
