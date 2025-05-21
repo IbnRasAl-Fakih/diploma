@@ -19,9 +19,8 @@ public class TypeConverterController {
     }
 
     @PostMapping
-    public ResponseEntity<List<Map<String, Object>>> convertTypes(@RequestBody TypeConverterRequest request) {
+    public ResponseEntity<List<Map<String, Object>>> convertTypes(@RequestBody TypeConverterRequest request) throws Exception {
         List<Map<String, Object>> converted = typeConverterService.convertTypes(request);
         return ResponseEntity.ok(converted);
     }
 }
-

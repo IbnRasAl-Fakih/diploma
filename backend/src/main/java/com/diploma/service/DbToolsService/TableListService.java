@@ -40,7 +40,7 @@ public class TableListService implements NodeExecutor {
     }
 
     @Override
-    public Object execute(Node node) {
+    public Object execute(Node node) throws Exception {
         if (node.getInputs().isEmpty()) {
             throw new NodeExecutionException("❌ DB Table List: Missing input node.");
         }
@@ -61,7 +61,7 @@ public class TableListService implements NodeExecutor {
         }
     }
 
-    public Map<String, Object> listTables(String sessionId) {
+    public Map<String, Object> listTables(String sessionId) throws Exception {
         Connection connection = connectionPoolService.getConnection(sessionId);
         if (connection == null) {
             throw new NodeExecutionException("❌ DB Table List: Database connection not found.");

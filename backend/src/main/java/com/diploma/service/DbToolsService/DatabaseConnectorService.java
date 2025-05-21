@@ -28,7 +28,7 @@ public class DatabaseConnectorService implements NodeExecutor{
     }
 
     @Override
-    public Object execute(Node node) {
+    public Object execute(Node node) throws Exception {
         try {
             String url = (String) node.getFields().get("url");
             String username = (String) node.getFields().get("username");
@@ -50,7 +50,7 @@ public class DatabaseConnectorService implements NodeExecutor{
         }
     }
 
-    public Map<String, String> connect(String url, String username, String password, String driver) {
+    public Map<String, String> connect(String url, String username, String password, String driver) throws Exception {
         try {
             Class.forName(driver);
             Connection connection = DriverManager.getConnection(url, username, password);

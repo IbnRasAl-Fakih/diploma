@@ -25,7 +25,7 @@ public class StringCleaningController {
 
     @Operation(summary = "Очистка строк от пробелов, непечатаемых и пользовательских символов")
     @PostMapping("/strings")
-    public ResponseEntity<List<Map<String, Object>>> cleanStrings(@RequestBody StringCleaningRequest request) {
+    public ResponseEntity<List<Map<String, Object>>> cleanStrings(@RequestBody StringCleaningRequest request) throws Exception {
         List<Map<String, Object>> cleanedData = stringCleaningService.cleanStrings(request);
         return ResponseEntity.ok(cleanedData);
     }

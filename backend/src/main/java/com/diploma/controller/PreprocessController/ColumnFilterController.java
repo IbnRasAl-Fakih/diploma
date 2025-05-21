@@ -20,7 +20,7 @@ public class ColumnFilterController {
     }
 
     @PostMapping("/filter")
-    public ResponseEntity<List<Map<String, Object>>> filterColumns(@RequestBody ColumnFilterRequest request) {
+    public ResponseEntity<List<Map<String, Object>>> filterColumns(@RequestBody ColumnFilterRequest request) throws Exception {
         List<Map<String, Object>> result = columnFilterService.removeColumns(request.getData(),
                 request.getColumnsToRemove());
         return ResponseEntity.ok(result);

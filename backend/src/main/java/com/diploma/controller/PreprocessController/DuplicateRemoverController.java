@@ -18,7 +18,7 @@ public class DuplicateRemoverController {
     }
 
     @PostMapping("/remove-duplicates")
-    public List<Map<String, Object>> removeDuplicates(@RequestBody DuplicateRemoverRequest request) {
+    public List<Map<String, Object>> removeDuplicates(@RequestBody DuplicateRemoverRequest request) throws Exception {
         return duplicateRemoverService.removeDuplicates(request.getData(), request.getSelectedColumns());
     }
 }

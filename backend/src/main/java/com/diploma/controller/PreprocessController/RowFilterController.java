@@ -19,7 +19,7 @@ public class RowFilterController {
     }
 
     @PostMapping("/filter")
-    public ResponseEntity<List<Map<String, Object>>> filter(@RequestBody RowFilterRequest req) {
+    public ResponseEntity<List<Map<String, Object>>> filter(@RequestBody RowFilterRequest req) throws Exception {
         return ResponseEntity.ok(rowFilterService.filterRows(req));
     }
 }

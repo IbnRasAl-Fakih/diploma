@@ -25,8 +25,8 @@ public class MissingDataController {
 
     @Operation(summary = "Заполнить пропущенные значения в JSON-данных")
     @PostMapping("/missingDataProcess")
-    public ResponseEntity<List<Map<String, Object>>> processMissingValues(@RequestBody MissingValuesRequest request) {
-        List<Map<String, Object>> processedData = dataProcessingService.processMissingValues(request);
+    public ResponseEntity<List<Map<String, Object>>> processMissingValues(@RequestBody MissingValuesRequest request) throws Exception {
+        List<Map<String, Object>> processedData = dataProcessingService.processMissingValues(request.getData(), request.getActions(), request.getFixValues());
         return ResponseEntity.ok(processedData);
     }
 }
