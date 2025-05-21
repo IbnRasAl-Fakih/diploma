@@ -2,17 +2,21 @@ package com.diploma.service.IoToolsService;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.diploma.dto.IoToolsDto.ExcelReader.ExcelReaderRequest;
+import com.diploma.model.Node;
+import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
+@Service
 @NodeType("excel_reader")
-public class ExcelReadService {
+public class ExcelReadService implements NodeExecutor {
 
     public static List<Map<String, Object>> readExcel(MultipartFile file, ExcelReaderRequest request)
             throws IOException {
@@ -73,5 +77,10 @@ public class ExcelReadService {
             case BLANK -> null;
             default -> cell.toString();
         };
+    }
+
+    @Override
+    public Object execute(Node node) throws Exception {
+        throw new UnsupportedOperationException("Unimplemented method 'execute'");
     }
 }

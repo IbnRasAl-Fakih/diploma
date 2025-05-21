@@ -2,45 +2,14 @@
     "workflowId": "4f80e029-9604-4ada-ba43-8c6590bc0370",
     "nodes": [
         {
-            "node_id": "2f7ce3da-1851-4c8d-a6b3-cb7f9ab33c93",
-            "type": "get_request",
-            "inputs": [],
+            "node_id": "92256aea-abf5-4ac7-922b-73b9d53e384b",
+            "type": "db_query_reader",
+            "inputs": ["ca2cf5d7-5047-4e1f-a3f2-0964c95a3fa9"],
             "outputs": [],
             "fields": {
-                "url": "https://app.nocodb.com/api/v2/tables/mqev0lgbfolp1if/records",
-                "headers": {
-                    "xc-token": "H6ZnhaEL5XLrVmID1jwWGgp5xAeMKwD0NJF706pF"
-                },
-                "timeout": 10000
+                "statementQuery": "select * from task_logs_noco_db"
             }
         },
-        {
-            "node_id": "bc1e76d3-f65a-4e1a-965f-75296bc8a9fd",
-            "type": "column_filter",
-            "inputs": ["2f7ce3da-1851-4c8d-a6b3-cb7f9ab33c93"],
-            "outputs": [],
-            "fields": {
-                "columnsToRemove": [
-                    "CreatedAt",
-                    "UpdatedAt",
-                    "DateAndTime"
-                ]
-            }
-        },
-        {
-            "node_id": "ba425efa-f4c3-4253-91b5-9b58417e1e3f",
-            "type": "column_renamer",
-            "inputs": ["bc1e76d3-f65a-4e1a-965f-75296bc8a9fd"],
-            "outputs": [],
-            "fields": {
-                "renameMap": {
-                    "Id": "id",
-                    "Label": "label",
-                    "Task Id": "task_id"
-                }
-            }
-        },
-
         {
             "node_id": "ca2cf5d7-5047-4e1f-a3f2-0964c95a3fa9",
             "type": "db_connector",
@@ -52,15 +21,6 @@
                 "username": "postgres",
                 "password": "qwerty123",
                 "driver": "org.postgresql.Driver"
-            }
-        },
-        {
-            "node_id": "8855f6de-0f7f-4f60-bada-9240c6b8ac1a",
-            "type": "db_merge",
-            "inputs": ["ca2cf5d7-5047-4e1f-a3f2-0964c95a3fa9", "ba425efa-f4c3-4253-91b5-9b58417e1e3f"],
-            "outputs": [],
-            "fields": {
-                "tableName": "task_logs_noco_db"
             }
         }
 	]

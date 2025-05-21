@@ -44,14 +44,12 @@ public class NodeMapper {
         UUID nodeId = UUID.fromString((String) nodeMap.get("node_id"));
         String type = (String) nodeMap.get("type");
 
+        if (type == "excel_reader" || type == "csv_reader") {
+            return new Node(nodeId, type, new ArrayList<>(), null);
+        }
+
         Map<String, Object> fields = (Map<String, Object>) nodeMap.get("fields");
 
-        Node node = new Node();
-        node.setNodeId(nodeId);
-        node.setType(type);
-        node.setFields(fields);
-        node.setInputs(new ArrayList<>()); // пока пустой, заполнится позже
-
-        return node;
+        return new Node(nodeId, type, new ArrayList<>(), fields);
     }
 }

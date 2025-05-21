@@ -1,5 +1,6 @@
 package com.diploma.service.DbToolsService;
 
+import com.diploma.exception.NodeExecutionException;
 import com.diploma.model.Node;
 import com.diploma.service.ResultService;
 import com.diploma.utils.DatabaseConnectionPoolService;
@@ -81,6 +82,8 @@ public class DbMergeService implements NodeExecutor {
             }
 
             return Map.of("message", "✅ Data written successfully");
+        } catch (IllegalArgumentException e) {
+            throw new NodeExecutionException("Invalid input: JSON structure is not supported or contains unexpected values.", e);
         } catch (Exception e) {
             throw new Exception("❌ Ошибка при выполнении DB Merge: " + e.getMessage(), e);
         }

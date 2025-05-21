@@ -1,7 +1,10 @@
 package com.diploma.service.IoToolsService;
 
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.diploma.model.Node;
+import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
 
 import java.io.BufferedReader;
@@ -9,8 +12,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
+@Service
 @NodeType("csv_reader")
-public class CsvReadService {
+public class CsvReadService implements NodeExecutor {
 
     public static List<Map<String, Object>> readCsvAsJson(MultipartFile file, String delimiter) throws IOException {
         List<Map<String, Object>> records = new ArrayList<>();
@@ -53,5 +57,10 @@ public class CsvReadService {
             return Boolean.parseBoolean(value);
         }
         return value; 
+    }
+
+    @Override
+    public Object execute(Node node) throws Exception {
+        throw new UnsupportedOperationException("Unimplemented method 'execute'");
     }
 }

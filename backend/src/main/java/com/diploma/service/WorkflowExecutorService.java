@@ -2,6 +2,7 @@ package com.diploma.service;
 
 import com.diploma.dto.ResultProcessorDto;
 import com.diploma.dto.WorkflowExecutorRequestDto;
+import com.diploma.exception.NodeExecutionException;
 import com.diploma.utils.DatabaseCleanerService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeMapper;
@@ -45,12 +46,11 @@ public class WorkflowExecutorService {
             NodeType annotation = clazz.getAnnotation(NodeType.class);
             if (annotation != null) {
                 try {
-
                     NodeExecutor instance = context.getBean(clazz);
                     executorRegistry.put(annotation.value(), instance);
-                    System.out.println("✅ Registered node type: " + annotation.value());
+                    System.out.println("Registered node type: " + annotation.value());
                 } catch (Exception e) {
-                    System.err.println("❌ Failed to register " + clazz.getSimpleName() + ": " + e.getMessage());
+                    System.err.println("Failed to register " + clazz.getSimpleName() + ": " + e.getMessage());
                 }
             }
         }
@@ -60,19 +60,18 @@ public class WorkflowExecutorService {
         UUID workflowId = dto.getWorkflowId();
         dbCleanerService.clean(workflowId);
         List<Map<String, Object>> nodes = (List<Map<String, Object>>) dto.getNodes();
-
-        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$/n"); // delete
-        System.out.println("Nodes before sorting: " + nodes);                      // delete
+        
+        
+        for (Map<String, Object> node : nodes) {
+            System.out.println("Node:");
+            for (Map.Entry<String, Object> entry : node.entrySet()) {
+                System.out.println("  " + entry.getKey() + ": " + entry.getValue());
+            }
+        }
 
         List<Map<String, Object>> sortedNodes = TopologicalSorter.sort(nodes);
 
-        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$/n"); // delete
-        System.out.println("Nodes after sorting: " + sortedNodes);                 // delete
-
         List<Node> sortedMappedNodes = NodeMapper.mapToNodeList(sortedNodes);
-
-        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$/n"); // delete
-        System.out.println("Nodes after mapping: " + sortedMappedNodes);           // delete
 
         for (Node node : sortedMappedNodes) {
 
@@ -81,11 +80,13 @@ public class WorkflowExecutorService {
                 throw new IllegalArgumentException("❌ Unknown node type: " + node.getType());
             }
 
+            if ("excel_reader".equals(node.getType()) || "csv_reader".equals(node.getType())) {
+                continue;
+            }
+
             try {
                 if ("db_connector".equals(node.getType())) {
                     String url = (String) node.getFields().get("url");
-
-                    System.out.println("url: " + url);
 
                     if (sessionService.doesSessionExist(workflowId, url)) {
                         Session session = sessionService.getByWorkflowIdAndUrl(workflowId, url);
@@ -101,7 +102,10 @@ public class WorkflowExecutorService {
                     processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), node.getType(), workflowId, result));
                 }
             } catch (Exception e) {
-                throw new RuntimeException("❌ Execution failed for node " + node.getNodeId() + ": " + e.getMessage(), e);
+                if (e instanceof NodeExecutionException) {
+                    throw (NodeExecutionException) e;
+                }
+                throw new NodeExecutionException("❌ Execution failed for node " + node.getNodeId(), e);
             }
         }
     }

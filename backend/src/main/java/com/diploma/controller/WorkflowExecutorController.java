@@ -21,12 +21,8 @@ public class WorkflowExecutorController {
 
     @PostMapping("/execute")
     @Tag(name = "ExecutorController")
-    public ResponseEntity<String> executeWorkflow(@RequestBody WorkflowExecutorRequestDto dto) {
-        try {
-            executorService.executeWorkflow(dto);
-            return ResponseEntity.ok("✅ Workflow executed");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("❌ Execution failed: " + e.getMessage());
-        }
+    public ResponseEntity<String> executeWorkflow(@RequestBody WorkflowExecutorRequestDto dto) throws Exception {
+        executorService.executeWorkflow(dto);
+        return ResponseEntity.ok("✅ Workflow executed");
     }
 }

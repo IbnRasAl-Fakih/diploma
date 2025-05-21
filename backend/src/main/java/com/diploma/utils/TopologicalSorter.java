@@ -8,23 +8,14 @@ public class TopologicalSorter {
         Map<String, List<String>> graph = new HashMap<>();
         Map<String, Integer> inDegree = new HashMap<>();
         Map<String, Map<String, Object>> idToNode = new HashMap<>();
-        Set<String> readerIds = new HashSet<>();
 
         // 1. Инициализация графа, inDegree и определение reader-ноды
         for (Map<String, Object> node : nodes) {
             String id = (String) node.get("node_id");
-            String type = (String) node.get("type");
 
             inDegree.put(id, 0);
             graph.put(id, new ArrayList<>());
             idToNode.put(id, node);
-
-            if (type != null) {
-                    if ("excel_reader".equalsIgnoreCase(type) || "csv_reader".equalsIgnoreCase(type)) {
-                    readerIds.add(id);
-                    System.out.println("Reader node found: " + id);
-                }
-            }
         }
 
         // 2. Построение графа и подсчёт входных степеней
@@ -43,12 +34,8 @@ public class TopologicalSorter {
             }
         }
 
-        // 3. Инициализация PriorityQueue: non-reader ноды имеют приоритет
-        Queue<String> queue = new PriorityQueue<>((a, b) -> {
-            boolean aIsReader = readerIds.contains(a);
-            boolean bIsReader = readerIds.contains(b);
-            return Boolean.compare(aIsReader, bIsReader); // non-reader < reader
-        });
+        // 3. Инициализация PriorityQueue
+        Queue<String> queue = new PriorityQueue<>();
 
         for (String id : inDegree.keySet()) {
             if (inDegree.get(id) == 0) {
@@ -61,11 +48,8 @@ public class TopologicalSorter {
 
         while (!queue.isEmpty()) {
             String currentId = queue.poll();
-
-            if (!readerIds.contains(currentId)) {
-                sorted.add(idToNode.get(currentId));
-            }
-
+            sorted.add(idToNode.get(currentId));
+            
             for (String neighbor : graph.get(currentId)) {
                 inDegree.put(neighbor, inDegree.get(neighbor) - 1);
                 if (inDegree.get(neighbor) == 0) {
@@ -75,10 +59,9 @@ public class TopologicalSorter {
         }
 
         // 5. Проверка на циклы
-        int expectedSize = nodes.size() - readerIds.size();
+        int expectedSize = nodes.size();
         if (sorted.size() != expectedSize) {
-            throw new RuntimeException("❌ Цикл в графе или нарушена зависимость (ожидалось "
-                    + expectedSize + ", получено " + sorted.size() + ")");
+            throw new RuntimeException("Цикл в графе или нарушена зависимость (ожидалось " + expectedSize + ", получено " + sorted.size() + ")");
         }
 
         return sorted;
