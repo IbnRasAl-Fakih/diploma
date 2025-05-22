@@ -51,14 +51,14 @@ public class DbReaderService implements NodeExecutor {
         }
 
         try {
-            Node dataContainsNode = findNodeService.findNode(node, "db_connector");
+            Node dataContainsNode = findNodeService.findNode(node, "db_connector").node();
             UUID sessionId = sessionService.getByNodeId(dataContainsNode.getNodeId()).getSessionId();
 
             List<Map<String, Object>> data = resultService.getDataFromNode(node.getInputs().get(0).getNodeId());
             String statementQuery = (String) data.get(0).get("sqlCommand");
 
             if (statementQuery == null || statementQuery.isBlank()) {
-                Node tableNameNode = findNodeService.findNode(node, "db_table_selector");
+                Node tableNameNode = findNodeService.findNode(node, "db_table_selector").node();
                 if (tableNameNode == null) {
                     throw new NodeExecutionException("❌ DB Reader: Neither sqlCommand nor tableName were retrieved from previous nodes. Unable to proceed with database query.");
                 }

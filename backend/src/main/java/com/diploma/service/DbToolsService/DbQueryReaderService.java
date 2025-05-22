@@ -46,7 +46,7 @@ public class DbQueryReaderService implements NodeExecutor {
         }
 
         try {
-            Node dataContainsNode = findNodeService.findNode(node, "db_connector");
+            Node dataContainsNode = findNodeService.findNode(node, "db_connector").node();
             UUID sessionId = sessionService.getByNodeId(dataContainsNode.getNodeId()).getSessionId();
 
             String statementQuery = (String) node.getFields().get("statementQuery");

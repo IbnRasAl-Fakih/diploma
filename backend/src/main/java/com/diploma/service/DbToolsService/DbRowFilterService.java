@@ -49,7 +49,7 @@ public class DbRowFilterService implements NodeExecutor {
         }
 
         try {
-            UUID sessionId = sessionService.getByNodeId(findNodeService.findNode(node, "db_connector").getNodeId()).getSessionId();
+            UUID sessionId = sessionService.getByNodeId(findNodeService.findNode(node, "db_connector").node().getNodeId()).getSessionId();
             String tableName = (String) node.getFields().get("tableName");
 
             Object rawFilters = node.getFields().get("filters");

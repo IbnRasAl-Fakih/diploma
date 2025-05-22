@@ -8,6 +8,7 @@ import com.diploma.utils.FindNodeService;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
 import com.diploma.utils.SessionService;
+import com.diploma.utils.FindNodeService.FoundNode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,6 @@ import java.sql.Connection;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
-import java.sql.SQLInvalidAuthorizationSpecException;
 import java.sql.SQLSyntaxErrorException;
 import java.sql.SQLTimeoutException;
 import java.sql.Statement;
@@ -50,15 +50,18 @@ public class DbWriterService implements NodeExecutor {
         }
 
         try {
-            Node dataContainsNode = findNodeService.findNode(node, "db_connector");
-            UUID sessionId = sessionService.getByNodeId(dataContainsNode.getNodeId()).getSessionId();
+            FoundNode dataContainsNode = findNodeService.findNode(node, "db_connector");
+
+            int index = (dataContainsNode.inputIndex() == 0) ? 1 : 0;
+
+            UUID sessionId = sessionService.getByNodeId(dataContainsNode.node().getNodeId()).getSessionId();
             String tableName = (String) node.getFields().get("tableName");
 
             if (tableName == null || tableName == "") {
                 throw new NodeExecutionException("❌ DB Writer: Missing required fields.");
             }
 
-            UUID inputNodeId = node.getInputs().get(1).getNodeId();
+            UUID inputNodeId = node.getInputs().get(index).getNodeId();
             List<Map<String, Object>> body = resultService.getDataFromNode(inputNodeId);
 
             if (body == null) {

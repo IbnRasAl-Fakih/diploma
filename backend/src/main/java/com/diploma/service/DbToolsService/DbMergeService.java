@@ -5,6 +5,7 @@ import com.diploma.model.Node;
 import com.diploma.service.ResultService;
 import com.diploma.utils.DatabaseConnectionPoolService;
 import com.diploma.utils.FindNodeService;
+import com.diploma.utils.FindNodeService.FoundNode;
 import com.diploma.utils.NodeExecutor;
 import com.diploma.utils.NodeType;
 import com.diploma.utils.SessionService;
@@ -17,7 +18,6 @@ import java.sql.Connection;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
-import java.sql.SQLInvalidAuthorizationSpecException;
 import java.sql.SQLNonTransientConnectionException;
 import java.sql.SQLSyntaxErrorException;
 import java.sql.SQLTimeoutException;
@@ -50,15 +50,18 @@ public class DbMergeService implements NodeExecutor {
         }
 
         try {
-            Node dataContainsNode = findNodeService.findNode(node, "db_connector");
-            UUID sessionId = sessionService.getByNodeId(dataContainsNode.getNodeId()).getSessionId();
+            FoundNode dataContainsNode = findNodeService.findNode(node, "db_connector");
+
+            int index = (dataContainsNode.inputIndex() == 0) ? 1 : 0;
+
+            UUID sessionId = sessionService.getByNodeId(dataContainsNode.node().getNodeId()).getSessionId();
             String tableName = (String) node.getFields().get("tableName");
 
             if (tableName == null || tableName == "") {
                 throw new NodeExecutionException("❌ DB Merge: Missing required fields.");
             }
 
-            UUID inputNodeId = node.getInputs().get(1).getNodeId();
+            UUID inputNodeId = node.getInputs().get(index).getNodeId();
             List<Map<String, Object>> body = resultService.getDataFromNode(inputNodeId);
 
             if (body == null) {

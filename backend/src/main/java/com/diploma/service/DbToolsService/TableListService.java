@@ -46,7 +46,7 @@ public class TableListService implements NodeExecutor {
         }
 
         try {
-            Node dataContainsNode = findNodeService.findNode(node, "db_connector");
+            Node dataContainsNode = findNodeService.findNode(node, "db_connector").node();
             UUID sessionId = sessionService.getByNodeId(dataContainsNode.getNodeId()).getSessionId();
 
             Map<String, Object> result = listTables(sessionId.toString());

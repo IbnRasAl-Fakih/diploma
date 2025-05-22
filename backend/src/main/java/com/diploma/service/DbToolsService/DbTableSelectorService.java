@@ -46,7 +46,7 @@ public class DbTableSelectorService implements NodeExecutor {
         }
 
         try {
-            Node dataContainsNode = findNodeService.findNode(node, "db_connector");
+            Node dataContainsNode = findNodeService.findNode(node, "db_connector").node();
             UUID sessionId = sessionService.getByNodeId(dataContainsNode.getNodeId()).getSessionId();
             String tableName = (String) node.getFields().get("tableName");
 

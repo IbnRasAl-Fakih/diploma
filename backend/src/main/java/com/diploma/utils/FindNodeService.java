@@ -1,21 +1,37 @@
 package com.diploma.utils;
 
+import com.diploma.model.Node;
 import org.springframework.stereotype.Service;
 
-import com.diploma.model.Node;
+import java.util.List;
 
 @Service
 public class FindNodeService {
 
-    public Node findNode(Node node, String type) throws Exception {
-        if (type.equals(node.getType())) {
-            return node;
-        }
+    public record FoundNode(Node node, int inputIndex) {}
 
-        if (node.getInputs() == null || node.getInputs().isEmpty()) {
+    public FoundNode findNode(Node node, String type) {
+        if (node == null || type == null) {
             return null;
         }
 
-        return findNode(node.getInputs().get(0), type);
+        if (type.equals(node.getType())) {
+            return new FoundNode(node, -1);
+        }
+
+        List<Node> inputs = node.getInputs();
+        if (inputs == null || inputs.isEmpty()) {
+            return null;
+        }
+
+        for (int i = 0; i < inputs.size(); i++) {
+            Node inputNode = inputs.get(i);
+            FoundNode found = findNode(inputNode, type);
+            if (found != null) {
+                return new FoundNode(found.node(), i);
+            }
+        }
+
+        return null;
     }
 }
