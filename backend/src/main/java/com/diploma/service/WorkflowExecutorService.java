@@ -101,12 +101,13 @@ public class WorkflowExecutorService {
                         Object result = executor.execute(node);
                         processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), node.getType(), workflowId, result));
                     }
+
                 } catch (NodeExecutionException e) {
                     throw e;
 
                 } catch (Exception e) {
-                    log.error("Execution failed for node " + node.getNodeId(), e);
-                    throw new NodeExecutionException("❌ Execution failed for node " + node.getNodeId());
+                    log.error("Execution failed for node " + node.getNodeId() + " , type: " + node.getType(),  e);
+                    throw new NodeExecutionException("❌ Execution failed for node " + node.getType());
                 }
             }
         } catch (NodeExecutionException e) {

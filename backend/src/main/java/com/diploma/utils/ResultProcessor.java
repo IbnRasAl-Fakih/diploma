@@ -4,6 +4,10 @@ import com.diploma.dto.ResultProcessorDto;
 import com.diploma.model.Result;
 import com.diploma.repository.ResultRepository;
 import com.diploma.dto.ResultResponseDto;
+import com.diploma.exception.NodeExecutionException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -12,6 +16,7 @@ import java.util.*;
 @Component
 public class ResultProcessor {
 
+    private static final Logger log = LoggerFactory.getLogger(ResultProcessor.class);
     private final ResultRepository repository;
 
     public ResultProcessor(ResultRepository repository) {
@@ -19,13 +24,15 @@ public class ResultProcessor {
     }
 
     public ResultResponseDto putToDatabase(ResultProcessorDto dto) {
-        Map<String, Object> normalized = normalizeToStandardFormat(dto.getResult());
-
-        System.out.println("************************************"); //delete
-        System.out.println(dto.getResult().toString());               //delete
-        System.out.println("************************************"); //delete
-
         try {
+            if (dto.getResult() == null) {
+                throw new NodeExecutionException("❌ Result data is null.");
+            }
+
+            Map<String, Object> normalized = normalizeToStandardFormat(dto.getResult());
+
+            System.out.println("normalized content: " + normalized);
+
             Result result = Result.builder()
                     .nodeId(dto.getNodeId())
                     .type(dto.getType())
@@ -34,9 +41,9 @@ public class ResultProcessor {
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();
-    
+
             Result saved = repository.save(result);
-    
+
             return ResultResponseDto.builder()
                     .nodeId(saved.getNodeId())
                     .type(saved.getType())
@@ -45,35 +52,56 @@ public class ResultProcessor {
                     .createdAt(saved.getCreatedAt())
                     .updatedAt(saved.getUpdatedAt())
                     .build();
-    
+
+        } catch (NodeExecutionException e) {
+            throw e;
+
+        } catch (IllegalArgumentException e) {
+            throw new NodeExecutionException("❌ Server error - Result Processor: Invalid input format: " + e.getMessage(), e);
+
+        } catch (ClassCastException e) {
+            throw new NodeExecutionException("❌ Server error - Result Processor: Type casting error while normalizing result structure: " + e.getMessage(), e);
+
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка при сохранении результата: " + e.getMessage(), e);
+            log.error("Failed to save result", e);
+            throw new NodeExecutionException("❌ Server error - Result Processor: Error while saving result: " + e.getMessage());
         }
     }
 
-    public Map<String, Object> normalizeToStandardFormat(Object rawJson) {
-        if (rawJson instanceof List<?> list) {
-            List<Object> fixedList = fixListElements(list);
-            Map<String, Object> result = new LinkedHashMap<>();
-            result.put("list", fixedList);
-            return result;
-        }
-    
-        if (rawJson instanceof Map<?, ?> rawMap) {
-            for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
-                if (entry.getValue() instanceof List<?> innerList) {
-                    List<Object> fixedList = fixListElements(innerList);
-                    Map<String, Object> result = new LinkedHashMap<>();
-                    result.put("list", fixedList);
-                    return result;
-                }
+    public Map<String, Object> normalizeToStandardFormat(Object rawJson) throws Exception {
+        try {
+            if (rawJson instanceof List<?> list) {
+                List<Object> fixedList = fixListElements(list);
+                Map<String, Object> result = new LinkedHashMap<>();
+                result.put("list", fixedList);
+                return result;
             }
-            Map<String, Object> result = new LinkedHashMap<>();
-            result.put("list", List.of(fixMap(rawMap)));
-            return result;
+        
+            if (rawJson instanceof Map<?, ?> rawMap) {
+                for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
+                    if (entry.getValue() instanceof List<?> innerList) {
+                        List<Object> fixedList = fixListElements(innerList);
+                        Map<String, Object> result = new LinkedHashMap<>();
+                        result.put("list", fixedList);
+                        return result;
+                    }
+                }
+                Map<String, Object> result = new LinkedHashMap<>();
+                result.put("list", List.of(fixMap(rawMap)));
+                return result;
+            }
+
+            return null;
+            
+        } catch (IllegalArgumentException e) {
+            throw new NodeExecutionException("❌ Unsupported input format: " + e.getMessage(), e);
+
+        } catch (ClassCastException e) {
+            throw new NodeExecutionException("❌ Invalid data type in JSON structure.", e);
+
+        } catch (NullPointerException e) {
+            throw new NodeExecutionException("❌ Malformed JSON structure (null key or value).", e);
         }
-    
-        throw new IllegalArgumentException("Unsupported JSON structure: expected object or array");
     }
     
     private List<Object> fixListElements(List<?> list) {
