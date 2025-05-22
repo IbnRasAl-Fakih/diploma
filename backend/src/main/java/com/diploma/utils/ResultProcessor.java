@@ -31,8 +31,6 @@ public class ResultProcessor {
 
             Map<String, Object> normalized = normalizeToStandardFormat(dto.getResult());
 
-            System.out.println("normalized content: " + normalized);
-
             Result result = Result.builder()
                     .nodeId(dto.getNodeId())
                     .type(dto.getType())

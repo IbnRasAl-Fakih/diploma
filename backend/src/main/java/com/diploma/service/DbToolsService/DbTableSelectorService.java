@@ -74,6 +74,21 @@ public class DbTableSelectorService implements NodeExecutor {
 
         DatabaseMetaData metaData = connection.getMetaData();
 
+        boolean tableExists = false;
+        try (ResultSet tables = metaData.getTables(null, null, tableName, new String[] { "TABLE" })) {
+            while (tables.next()) {
+                String foundTable = tables.getString("TABLE_NAME");
+                if (foundTable != null && foundTable.equalsIgnoreCase(tableName)) {
+                    tableExists = true;
+                    break;
+                }
+            }
+        }
+
+        if (!tableExists) {
+            throw new NodeExecutionException("❌ DB Table Selector: Table '" + tableName + "' does not exist.");
+        }
+
         List<Map<String, String>> columns = new ArrayList<>();
         try (ResultSet rs = metaData.getColumns(null, null, tableName, null)) {
             while (rs.next()) {

@@ -45,25 +45,38 @@ public class DbRowFilterService implements NodeExecutor {
     @Override
     public Object execute(Node node) throws Exception {
         if (node.getInputs().isEmpty()) {
-            throw new NodeExecutionException("❌ DB Row Filter: Missing input nodes.");
+            throw new NodeExecutionException("❌ DB Row Filter: Missing input node.");
         }
 
         try {
             UUID sessionId = sessionService.getByNodeId(findNodeService.findNode(node, "db_connector").getNodeId()).getSessionId();
-            String tableName = (String) findNodeService.findNode(node, "db_table_selector").getFields().get("tableName");
+            String tableName = (String) node.getFields().get("tableName");
+
             Object rawFilters = node.getFields().get("filters");
 
             if (tableName == null || tableName == "" || rawFilters == null || rawFilters == "") {
                 throw new NodeExecutionException("❌ DB Row Filter: Missing required fields.");
             }
 
-            List<FilterCondition> filters = objectMapper.convertValue(rawFilters, new TypeReference<List<FilterCondition>>() {});
+            List<FilterCondition> filters;
+
+            if (rawFilters instanceof List<?>) {
+                filters = objectMapper.convertValue(rawFilters, new TypeReference<List<FilterCondition>>() {});
+            } else if (rawFilters instanceof Map) {
+                FilterCondition single = objectMapper.convertValue(rawFilters, FilterCondition.class);
+                filters = List.of(single);
+            } else {
+                throw new NodeExecutionException("❌ DB Row Filter: 'filters' must be an object or a list of objects.");
+            }
 
             return filter(sessionId.toString(), tableName, filters);
 
+        } catch (NodeExecutionException e) {
+            throw e;
+
         } catch (Exception e) {
             log.error("DB Row Filter execution failed in method execute()", e);
-            throw new NodeExecutionException("❌ DB Row Filter execution failed: ", e);
+            throw new NodeExecutionException("❌ DB Row Filter execution failed.");
         }
     }
 
@@ -143,9 +156,12 @@ public class DbRowFilterService implements NodeExecutor {
             count = rs.next() ? rs.getInt(1) : 0;
 
             return Map.of("sqlCommand", userSql, "count", count);
+        } catch (NodeExecutionException e) {
+            throw e;
+
         } catch (Exception e) {
             log.error("DB Row Filter execution failed", e);
-            throw new NodeExecutionException("❌ DB Row Filter: ", e);
+            throw new NodeExecutionException("❌ DB Row Filter: Unknown error.");
         }
     }
 }

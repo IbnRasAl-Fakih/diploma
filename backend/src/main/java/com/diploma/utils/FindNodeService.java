@@ -13,7 +13,7 @@ public class FindNodeService {
         }
 
         if (node.getInputs() == null || node.getInputs().isEmpty()) {
-            throw new Exception("Node with type " + type + " not found");
+            return null;
         }
 
         return findNode(node.getInputs().get(0), type);

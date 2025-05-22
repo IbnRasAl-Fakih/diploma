@@ -17,13 +17,12 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
-import java.sql.SQLInvalidAuthorizationSpecException;
 import java.sql.SQLNonTransientConnectionException;
 import java.sql.SQLSyntaxErrorException;
 import java.sql.SQLTimeoutException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -56,10 +55,16 @@ public class DbReaderService implements NodeExecutor {
             UUID sessionId = sessionService.getByNodeId(dataContainsNode.getNodeId()).getSessionId();
 
             List<Map<String, Object>> data = resultService.getDataFromNode(node.getInputs().get(0).getNodeId());
-            String statementQuery = data.get(0).get("sqlCommand").toString();
+            String statementQuery = (String) data.get(0).get("sqlCommand");
 
             if (statementQuery == null || statementQuery.isBlank()) {
-                throw new NodeExecutionException("❌ DB Rader: Failed to get the result of the previous node.");
+                Node tableNameNode = findNodeService.findNode(node, "db_table_selector");
+                if (tableNameNode == null) {
+                    throw new NodeExecutionException("❌ DB Reader: Neither sqlCommand nor tableName were retrieved from previous nodes. Unable to proceed with database query.");
+                }
+                String tableName = (String) tableNameNode.getFields().get("tableName");
+
+                statementQuery = "SELECT * FROM " + tableName + ";";
             }
 
             List<Map<String, Object>> result = executeQuery(sessionId.toString(), statementQuery);
@@ -95,7 +100,7 @@ public class DbReaderService implements NodeExecutor {
                 List<Map<String, Object>> resultList = new ArrayList<>();
 
                 while (resultSet.next()) {
-                    Map<String, Object> rowMap = new HashMap<>();
+                    Map<String, Object> rowMap = new LinkedHashMap<>();
                     for (int i = 1; i <= columnCount; i++) {
                         String columnName = resultSet.getMetaData().getColumnName(i);
                         Object columnValue = resultSet.getObject(i);
