@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.diploma.dto.PreprocessDto.StringCleaningRequest;
 import com.diploma.exception.NodeExecutionException;
 import com.diploma.model.Node;
 import com.diploma.service.ResultService;
@@ -26,93 +25,113 @@ public class StringCleaningService implements NodeExecutor {
 
     @Override
     public Object execute(Node node) throws Exception {
-        if (node.getInputs().isEmpty()) {
+        if (node.getInputs() == null || node.getInputs().isEmpty()) {
             throw new NodeExecutionException("❌ String Cleaner: Missing input node.");
         }
 
         try {
             UUID inputNodeId = node.getInputs().get(0).getNodeId();
+            List<Map<String, Object>> data;
 
-            List<Map<String, Object>> data = resultService.getDataFromNode(inputNodeId);
+            try {
+                data = resultService.getDataFromNode(inputNodeId);
+            } catch (Exception e) {
+                throw new NodeExecutionException("❌ Failed to fetch input node data: " + e.getMessage(), e);
+            }
 
             if (data == null) {
                 throw new NodeExecutionException("❌ String Cleaner: Failed to get the result of the previous node.");
             }
 
-            StringCleaningRequest request = new StringCleaningRequest();
-            request.setData(data);
-            request.setColumnActions((Map<String, List<String>>) node.getFields().get("columnActions"));
-            request.setGlobalActions((List<String>) node.getFields().get("globalActions"));
-            request.setCustomCharsToRemove((List<String>) node.getFields().get("customCharsToRemove"));
+            Map<String, List<String>> columnActions;
+            List<String> globalActions;
+            List<String> customCharsToRemove;
 
-            List<Map<String, Object>> filtred = cleanStrings(request);
+            try {
+                columnActions = (Map<String, List<String>>) node.getFields().get("columnActions");
+                globalActions = (List<String>) node.getFields().get("globalActions");
+                customCharsToRemove = (List<String>) node.getFields().get("customCharsToRemove");
+            } catch (ClassCastException e) {
+                throw new NodeExecutionException("❌ String Cleaner: Invalid field types in node.");
+            }
 
-            return Map.of("Cleaned", filtred);
+            List<Map<String, Object>> cleanedData;
+            try {
+                cleanedData = cleanStrings(data, columnActions, globalActions, customCharsToRemove);
+            } catch (Exception e) {
+                throw new NodeExecutionException("❌ String Cleaner: Error during cleaning process.");
+            }
+
+            return Map.of("result", cleanedData);
+
         } catch (NodeExecutionException e) {
             throw e;
 
         } catch (Exception e) {
-            log.error("String Cleaner execution failed in method execute()", e);
+            log.error("❌ Unexpected error in String Cleaner node execution", e);
             throw new NodeExecutionException("❌ String Cleaner execution failed.");
         }
     }
 
-    public List<Map<String, Object>> cleanStrings(StringCleaningRequest request) throws Exception {
+    public List<Map<String, Object>> cleanStrings(List<Map<String, Object>> data, Map<String, List<String>> columnActions, List<String> globalActions, List<String> customCharsToRemove) throws Exception {
         try {
-            List<Map<String, Object>> data = request.getData();
-            Map<String, List<String>> columnActions = request.getColumnActions();
-            List<String> globalActions = request.getGlobalActions();
-            List<String> customCharsToRemove = request.getCustomCharsToRemove();
+            if (data == null || data.isEmpty()) return data;
 
-            if (data == null || data.isEmpty())
-                return data;
-
+            List<Map<String, Object>> mutableData = new ArrayList<>();
             for (Map<String, Object> row : data) {
+                Map<String, Object> copy = new LinkedHashMap<>();
+                for (Map.Entry<String, Object> entry : row.entrySet()) {
+                    copy.put(entry.getKey(), entry.getValue());
+                }
+                mutableData.add(copy);
+            }
+
+            for (Map<String, Object> row : mutableData) {
                 for (Map.Entry<String, Object> entry : row.entrySet()) {
                     String column = entry.getKey();
                     Object rawValue = entry.getValue();
 
-                    if (rawValue == null)
-                        continue;
+                    if (rawValue == null) continue;
 
                     String value = rawValue.toString();
-                    Set<String> actions = new HashSet<>();
-                    if (globalActions != null)
-                        actions.addAll(globalActions);
-                    if (columnActions != null && columnActions.containsKey(column))
-                        actions.addAll(columnActions.get(column));
+
+                    List<String> actions = new ArrayList<>();
+                    if (globalActions != null) actions.addAll(globalActions);
+                    if (columnActions != null && columnActions.containsKey(column)) {
+                        for (String action : columnActions.get(column)) {
+                            if (!actions.contains(action)) {
+                                actions.add(action);
+                            }
+                        }
+                    }
 
                     for (String action : actions) {
                         switch (action) {
-                            case "Trim":
-                                value = value.replaceAll("\\s{2,}", " ").trim();
-                                break;
-                            case "Remove Non-Printable":
-                                value = value.replaceAll("\\p{C}", "");
-                                break;
-                            case "Remove Custom Chars":
+                            case "Trim" -> value = value.replaceAll("\\s{2,}", " ").trim();
+                            case "Remove Non-Printable" -> value = value.replaceAll("\\p{C}", "");
+                            case "Remove Custom Chars" -> {
                                 if (customCharsToRemove != null) {
                                     for (String ch : customCharsToRemove) {
-                                        value = value.replace(ch, "");
+                                        if (ch != null && !ch.isEmpty()) {
+                                            value = value.replace(ch, "");
+                                        }
                                     }
                                 }
-                                break;
-                            default:
-                                break;
+                            }
+                            default -> {}
                         }
                     }
 
                     row.put(column, value);
                 }
             }
-
-            return data;
-
-        } catch (NodeExecutionException e) {
-            throw e;
+            return mutableData;
 
         } catch (ClassCastException e) {
             throw new NodeExecutionException("❌ String Cleaner: Invalid input data structure.");
+
+        } catch (NodeExecutionException e) {
+            throw e;
 
         } catch (Exception e) {
             log.error("String Cleaner execution failed", e);
