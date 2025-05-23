@@ -10,14 +10,12 @@ public class NodeMapper {
         Map<String, Node> idToNodeObject = new HashMap<>();
         List<Node> nodeList = new ArrayList<>();
 
-        // 1. Сначала создаём все объекты Node с пустым inputs
         for (Map<String, Object> nodeMap : sortedNodes) {
             Node node = mapToNode(nodeMap);
             idToNodeObject.put(node.getNodeId().toString(), node);
             nodeList.add(node);
         }
 
-        // 2. Потом заполняем поле inputs реальными Node (связями)
         for (int i = 0; i < sortedNodes.size(); i++) {
             Node node = nodeList.get(i);
             Map<String, Object> nodeMap = sortedNodes.get(i);

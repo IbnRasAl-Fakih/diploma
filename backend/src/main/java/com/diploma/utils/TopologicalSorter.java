@@ -24,7 +24,7 @@ public class TopologicalSorter {
             if (inputs != null) {
                 for (String inputId : inputs) {
                     if (!graph.containsKey(inputId)) {
-                        throw new RuntimeException("❌ Неизвестный input: " + inputId);
+                        throw new RuntimeException("❌ Unknown input: " + inputId);
                     }
                     graph.get(inputId).add(targetId);
                     inDegree.put(targetId, inDegree.get(targetId) + 1);

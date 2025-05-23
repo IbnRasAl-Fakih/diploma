@@ -99,8 +99,6 @@ public class WorkflowExecutorService {
                         }
                     } else {
                         Object result = executor.execute(node);
-
-                        System.out.println("result type = " + (result != null ? result.getClass().getName() : "null"));
                         
                         processor.putToDatabase(new ResultProcessorDto(node.getNodeId(), node.getType(), workflowId, result));
                     }
