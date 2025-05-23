@@ -4,6 +4,8 @@ import com.diploma.dto.WorkflowRequestDto;
 import com.diploma.dto.WorkflowResponseDto;
 import com.diploma.model.Workflow;
 import com.diploma.repository.WorkflowRepository;
+import com.diploma.utils.DatabaseCleanerService;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -13,10 +15,12 @@ import java.util.stream.Collectors;
 @Service
 public class WorkflowService {
 
+    private final DatabaseCleanerService dbCleanerService;
     private final WorkflowRepository repository;
 
-    public WorkflowService(WorkflowRepository repository) {
+    public WorkflowService(WorkflowRepository repository, DatabaseCleanerService dbCleanerService) {
         this.repository = repository;
+        this.dbCleanerService = dbCleanerService;
     }
 
     public WorkflowResponseDto create(WorkflowRequestDto dto) {
@@ -55,7 +59,8 @@ public class WorkflowService {
         return toDto(repository.save(existing));
     }
 
-    public void delete(UUID id) {
+    public void delete(UUID id) throws Exception{
+        dbCleanerService.clean(id);
         repository.deleteById(id);
     }
 
